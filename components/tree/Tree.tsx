@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { GraphQLSchema, GraphQLField } from "graphql";
 import {
   getNamedType,
@@ -27,6 +27,35 @@ export function SelectionPanel(props: {
     rootArgs,
     onRootArgsChange,
   } = props;
+
+  // Local state for immediate UI updates
+  const [localArgs, setLocalArgs] = useState(rootArgs);
+
+  // Update local state when rootArgs prop changes
+  useEffect(() => {
+    setLocalArgs(rootArgs);
+  }, [rootArgs]);
+
+  // Ref to store the timeout ID
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Optimized debounced update
+  const updateArgs = useCallback((newArgs: Record<string, unknown>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      onRootArgsChange(newArgs);
+    }, 500); // Longer debounce for better performance
+  }, [onRootArgsChange]);
+
+  // Immediate update for blur events
+  const immediateUpdate = useCallback((newArgs: Record<string, unknown>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    onRootArgsChange(newArgs);
+  }, [onRootArgsChange]);
   const q = rootQueryType(schema).getFields()[rootField];
   const rootType = getNamedType(q.type);
 
@@ -152,11 +181,17 @@ export function SelectionPanel(props: {
                   </label>
                   <input
                     key={a.name}
-                    value={(rootArgs as any)[a.name] ?? ""}
+                    value={(localArgs as any)[a.name] ?? ""}
                     onChange={(e) => {
                       const newValue = e.target.value;
-                      const newRootArgs = { ...rootArgs, [a.name]: newValue };
-                      onRootArgsChange(newRootArgs);
+                      const newLocalArgs = { ...localArgs, [a.name]: newValue };
+                      setLocalArgs(newLocalArgs); // Immediate UI update
+                      updateArgs(newLocalArgs); // Debounced parent update
+                    }}
+                    onBlur={(e) => {
+                      const newValue = e.target.value;
+                      const newLocalArgs = { ...localArgs, [a.name]: newValue };
+                      immediateUpdate(newLocalArgs); // Immediate update on blur
                     }}
                     placeholder={`Enter ${a.name}...`}
                     style={{

@@ -1,8 +1,8 @@
 import { GraphQLSchema } from 'graphql';
 import SchemaExplorer from '@/components/SchemaExplorer';
 
-export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, error, schema, onClearCredentials, isAutoConnecting }:{
-  endpoint: string; setEndpoint: (s: string) => void; token: string; setToken: (s: string) => void; connect: () => void; error: string | null; schema: GraphQLSchema | null; onClearCredentials?: () => void; isAutoConnecting?: boolean;
+export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, error, schema, onClearCredentials, isAutoConnecting, isConnecting }:{
+  endpoint: string; setEndpoint: (s: string) => void; token: string; setToken: (s: string) => void; connect: () => void; error: string | null; schema: GraphQLSchema | null; onClearCredentials?: () => void; isAutoConnecting?: boolean; isConnecting?: boolean;
 }){
   return (
     <div style={{ 
@@ -65,14 +65,14 @@ export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, 
         
         <button 
           onClick={connect} 
-          disabled={isAutoConnecting || !!schema}
+          disabled={isAutoConnecting || isConnecting || !!schema}
           style={{ 
             width: "100%",
             padding: "var(--space-4)",
             fontSize: "1rem",
             fontWeight: "600",
-            opacity: (isAutoConnecting || schema) ? 0.7 : 1,
-            cursor: (isAutoConnecting || schema) ? "not-allowed" : "pointer",
+            opacity: (isAutoConnecting || isConnecting || schema) ? 0.7 : 1,
+            cursor: (isAutoConnecting || isConnecting || schema) ? "not-allowed" : "pointer",
           }}
         >
           {isAutoConnecting ? (
@@ -81,6 +81,13 @@ export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, 
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
               </svg>
               Auto-connecting...
+            </>
+          ) : isConnecting ? (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "var(--space-2)", animation: "spin 1s linear infinite" }}>
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+              </svg>
+              Connecting...
             </>
           ) : schema ? (
             <>

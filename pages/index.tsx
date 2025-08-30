@@ -108,6 +108,7 @@ export default function Home() {
   const [connectError, setConnectError] = useState<string | null>(null);
   const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = useState(false);
   const [isAutoConnecting, setIsAutoConnecting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const [rootFieldName, setRootFieldName] = useState<string | null>(null);
   const [rootArgs, setRootArgs] = useState<Record<string, unknown>>({});
@@ -145,29 +146,35 @@ export default function Home() {
 
   const connect = useCallback(async () => {
     setConnectError(null);
-    const parsed = ConnectSchema.safeParse({
-      endpoint,
-      token: token || undefined,
-    });
-    if (!parsed.success) {
-      setConnectError(parsed.error.errors[0]?.message);
-      return;
-    }
-    const r = await fetch("/api/schema", {
-      method: "POST",
-      body: JSON.stringify(parsed.data),
-      headers: { "Content-Type": "application/json" },
-    });
-    const json = await r.json();
-    if (!r.ok || json.error) {
-      setConnectError(json.error || "Failed to introspect.");
-      return;
-    }
-    const sch = buildSchemaFromIntrospection(json);
-    setSchema(sch);
+    setIsConnecting(true);
     
-    // Save credentials on successful connection
-    saveCredentials(endpoint, token);
+    try {
+      const parsed = ConnectSchema.safeParse({
+        endpoint,
+        token: token || undefined,
+      });
+      if (!parsed.success) {
+        setConnectError(parsed.error.errors[0]?.message);
+        return;
+      }
+      const r = await fetch("/api/schema", {
+        method: "POST",
+        body: JSON.stringify(parsed.data),
+        headers: { "Content-Type": "application/json" },
+      });
+      const json = await r.json();
+      if (!r.ok || json.error) {
+        setConnectError(json.error || "Failed to introspect.");
+        return;
+      }
+      const sch = buildSchemaFromIntrospection(json);
+      setSchema(sch);
+      
+      // Save credentials on successful connection
+      saveCredentials(endpoint, token);
+    } finally {
+      setIsConnecting(false);
+    }
   }, [endpoint, token]);
 
   // Clear stored credentials
@@ -475,6 +482,7 @@ export default function Home() {
         schema={schema}
         onClearCredentials={handleClearCredentials}
         isAutoConnecting={isAutoConnecting}
+        isConnecting={isConnecting}
       />
       <div style={{ background: "var(--bg-primary)" }}>
         {!schema ? (

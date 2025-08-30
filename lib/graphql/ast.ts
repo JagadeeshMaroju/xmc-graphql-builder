@@ -219,12 +219,17 @@ export function mergeRootArgsIntoSelections(
   selections: Selection[],
   rootArgTypes: readonly GraphQLArgument[] | undefined
 ): Selection[] {
-  const args = Object.entries(rootArgs).map(([name, value]) => {
-    const type = rootArgTypes?.find((a) => a.name === name)?.type as
-      | GraphQLInputType
-      | undefined;
-    return { name, value, type: type ?? (null as any) };
-  });
+  const args = Object.entries(rootArgs)
+    .filter(([name, value]) => {
+      // Exclude empty, null, undefined values and empty strings
+      return value !== null && value !== undefined && value !== "";
+    })
+    .map(([name, value]) => {
+      const type = rootArgTypes?.find((a) => a.name === name)?.type as
+        | GraphQLInputType
+        | undefined;
+      return { name, value, type: type ?? (null as any) };
+    });
   return [{ field: rootFieldName, args, children: selections }];
 }
 

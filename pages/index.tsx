@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Head from "next/head";
 import { buildSchemaFromIntrospection } from "@/lib/graphql/schema";
 import {
   buildOperation,
@@ -463,15 +464,21 @@ export default function Home() {
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "380px 1fr 1fr",
-        height: "100vh",
-        background: "var(--border-light)",
-        gap: "1px",
-      }}
-    >
+    <>
+      <Head>
+        <title>Sitecore GraphQL Query Builder</title>
+        <meta name="description" content="Build and test GraphQL queries for Sitecore" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "380px 1fr 1fr",
+          height: "100vh",
+          background: "var(--border-light)",
+          gap: "1px",
+        }}
+      >
       <ConnectPanel
         endpoint={endpoint}
         setEndpoint={setEndpoint}
@@ -706,6 +713,7 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

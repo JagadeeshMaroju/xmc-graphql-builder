@@ -40,22 +40,28 @@ export function SelectionPanel(props: {
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Optimized debounced update
-  const updateArgs = useCallback((newArgs: Record<string, unknown>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      onRootArgsChange(newArgs);
-    }, 500); // Longer debounce for better performance
-  }, [onRootArgsChange]);
+  const updateArgs = useCallback(
+    (newArgs: Record<string, unknown>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        onRootArgsChange(newArgs);
+      }, 500); // Longer debounce for better performance
+    },
+    [onRootArgsChange]
+  );
 
   // Immediate update for blur events
-  const immediateUpdate = useCallback((newArgs: Record<string, unknown>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    onRootArgsChange(newArgs);
-  }, [onRootArgsChange]);
+  const immediateUpdate = useCallback(
+    (newArgs: Record<string, unknown>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      onRootArgsChange(newArgs);
+    },
+    [onRootArgsChange]
+  );
   const q = rootQueryType(schema).getFields()[rootField];
   const rootType = getNamedType(q.type);
 
@@ -105,112 +111,122 @@ export function SelectionPanel(props: {
             marginBottom: "24px",
           }}
         >
-        <div
-          style={{
-            padding: "24px",
-            borderBottom: "1px solid var(--border-light)",
-            background: "var(--bg-secondary)",
-          }}
-        >
-          <h3
+          <div
             style={{
-              margin: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
+              padding: "24px",
+              borderBottom: "1px solid var(--border-light)",
+              background: "var(--bg-secondary)",
             }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-            {rootField} Arguments
-          </h3>
-        </div>
-        <div style={{ padding: "24px" }}>
-          {q.args.length === 0 ? (
-            <p
+            <h3
               style={{
-                color: "var(--text-muted)",
                 margin: 0,
-                textAlign: "center",
-                padding: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              No arguments required for this field.
-            </p>
-          ) : (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-            >
-              {q.args.map((a) => (
-                <div
-                  key={a.name}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "140px 1fr",
-                    gap: "12px",
-                    alignItems: "center",
-                  }}
-                >
-                  <label
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+              {rootField} Arguments
+            </h3>
+          </div>
+          <div style={{ padding: "24px" }}>
+            {q.args.length === 0 ? (
+              <p
+                style={{
+                  color: "var(--text-muted)",
+                  margin: 0,
+                  textAlign: "center",
+                  padding: "16px",
+                }}
+              >
+                No arguments required for this field.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                }}
+              >
+                {q.args.map((a) => (
+                  <div
+                    key={a.name}
                     style={{
-                      margin: 0,
-                      fontSize: "0.875rem",
-                      fontWeight: "500",
-                      color: "var(--text-primary)",
-                      fontFamily:
-                        "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+                      display: "grid",
+                      gridTemplateColumns: "140px 1fr",
+                      gap: "12px",
+                      alignItems: "center",
                     }}
                   >
-                    {a.name}{" "}
-                    <em
+                    <label
                       style={{
-                        color: "var(--text-muted)",
-                        fontWeight: "normal",
+                        margin: 0,
+                        fontSize: "0.875rem",
+                        fontWeight: "500",
+                        color: "var(--text-primary)",
+                        fontFamily:
+                          "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
                       }}
                     >
-                      ({(a.type as any).toString()})
-                    </em>
-                  </label>
-                  <input
-                    key={a.name}
-                    value={(localArgs as any)[a.name] ?? ""}
-                    onChange={(e) => {
-                      const newValue = e.target.value;
-                      const newLocalArgs = { ...localArgs, [a.name]: newValue };
-                      setLocalArgs(newLocalArgs); // Immediate UI update
-                      updateArgs(newLocalArgs); // Debounced parent update
-                    }}
-                    onBlur={(e) => {
-                      const newValue = e.target.value;
-                      const newLocalArgs = { ...localArgs, [a.name]: newValue };
-                      immediateUpdate(newLocalArgs); // Immediate update on blur
-                    }}
-                    placeholder={`Enter ${a.name}...`}
-                    style={{
-                      margin: 0,
-                      padding: "8px 12px",
-                      border: "1px solid var(--border-light)",
-                      borderRadius: "6px",
-                      fontSize: "0.875rem",
-                      background: "var(--bg-primary)",
-                      color: "var(--text-primary)",
-                      width: "100%",
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+                      {a.name}{" "}
+                      <em
+                        style={{
+                          color: "var(--text-muted)",
+                          fontWeight: "normal",
+                        }}
+                      >
+                        ({(a.type as any).toString()})
+                      </em>
+                    </label>
+                    <input
+                      key={a.name}
+                      value={(localArgs as any)[a.name] ?? ""}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        const newLocalArgs = {
+                          ...localArgs,
+                          [a.name]: newValue,
+                        };
+                        setLocalArgs(newLocalArgs); // Immediate UI update
+                        updateArgs(newLocalArgs); // Debounced parent update
+                      }}
+                      onBlur={(e) => {
+                        const newValue = e.target.value;
+                        const newLocalArgs = {
+                          ...localArgs,
+                          [a.name]: newValue,
+                        };
+                        immediateUpdate(newLocalArgs); // Immediate update on blur
+                      }}
+                      placeholder={`Enter ${a.name}...`}
+                      style={{
+                        margin: 0,
+                        padding: "8px 12px",
+                        border: "1px solid var(--border-light)",
+                        borderRadius: "6px",
+                        fontSize: "0.875rem",
+                        background: "var(--bg-primary)",
+                        color: "var(--text-primary)",
+                        width: "100%",
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {isObjectType(rootType) ||
@@ -517,26 +533,6 @@ export function NodeFields({
                     >
                       • path: {path}
                     </span>
-                  )}
-                  {id && !path && (
-                    <button
-                      style={{
-                        marginLeft: "8px",
-                        fontSize: "0.75rem",
-                        padding: "4px 8px",
-                        background: "var(--primary)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        await onLookupTemplatePath(id);
-                      }}
-                    >
-                      Lookup path
-                    </button>
                   )}
                 </summary>
                 <div

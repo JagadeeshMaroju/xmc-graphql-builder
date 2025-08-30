@@ -151,49 +151,11 @@ export function SelectionPanel(props: {
                     </em>
                   </label>
                   <input
-                    key={`${a.name}-${(rootArgs as any)[a.name]}`}
+                    key={a.name}
                     value={(rootArgs as any)[a.name] ?? ""}
                     onChange={(e) => {
                       const newValue = e.target.value;
-                      console.log(`onChange triggered for ${a.name}:`, {
-                        eventValue: e.target.value,
-                        currentRootArgs: rootArgs,
-                        newValue: newValue,
-                        eventTarget: e.target,
-                        inputValue: e.target.value,
-                        inputLength: e.target.value.length,
-                      });
                       const newRootArgs = { ...rootArgs, [a.name]: newValue };
-                      console.log(
-                        `Updating ${a.name} from "${
-                          (rootArgs as any)[a.name]
-                        }" to "${newValue}"`
-                      );
-                      console.log("New rootArgs:", newRootArgs);
-                      onRootArgsChange(newRootArgs);
-                    }}
-                    onInput={(e) => {
-                      console.log(
-                        `onInput triggered for ${a.name}:`,
-                        (e.target as HTMLInputElement).value
-                      );
-                    }}
-                    onKeyUp={(e) => {
-                      console.log(
-                        `onKeyUp triggered for ${a.name}:`,
-                        (e.target as HTMLInputElement).value
-                      );
-                    }}
-                    onBlur={(e) => {
-                      const newValue = e.target.value;
-                      console.log(`onBlur triggered for ${a.name}:`, {
-                        eventValue: e.target.value,
-                        currentRootArgs: rootArgs,
-                        newValue: newValue,
-                      });
-                      const newRootArgs = { ...rootArgs, [a.name]: newValue };
-                      console.log(`Final update for ${a.name}: "${newValue}"`);
-                      console.log("Final rootArgs:", newRootArgs);
                       onRootArgsChange(newRootArgs);
                     }}
                     placeholder={`Enter ${a.name}...`}

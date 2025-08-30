@@ -142,6 +142,9 @@ export function SearchBuilder({
         padding: 12,
         borderRadius: 8,
         margin: "12px 16px",
+        overflow: "visible",
+        position: "relative",
+        zIndex: 0,
       }}
     >
       <h3 style={{ marginTop: 0 }}>Search</h3>
@@ -154,49 +157,175 @@ export function SearchBuilder({
           gap: 8,
           alignItems: "center",
           marginBottom: 8,
+          overflow: "visible",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <label style={{ gridColumn: "span 1" }}>Group</label>
         <select
-          style={{ gridColumn: "span 2" }}
+          style={{ 
+            gridColumn: "span 2",
+            padding: "8px 12px",
+            border: "1px solid var(--border-light)",
+            borderRadius: "6px",
+            fontSize: "0.875rem",
+            background: "var(--bg-primary)",
+            color: "var(--text-primary)",
+            fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+            cursor: "pointer",
+            transition: "border-color 0.2s ease",
+            position: "relative",
+            zIndex: 999,
+          }}
           value={group}
           onChange={(e) => setGroup(e.target.value as GroupOp)}
+          onFocus={(e) => {
+            e.target.style.borderColor = "var(--primary)";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "var(--border-light)";
+          }}
         >
           <option value="AND">AND</option>
           <option value="OR">OR</option>
         </select>
 
-        <label
+        <div
           style={{
             gridColumn: "span 3",
             display: "flex",
             alignItems: "center",
-            gap: 6,
+            gap: "12px",
+            cursor: "pointer",
+            padding: "4px 8px",
+            borderRadius: "var(--radius-md)",
+            transition: "background-color 0.2s ease",
+            margin: 0,
+            fontSize: "0.875rem",
+            fontWeight: "500",
+            color: "var(--text-primary)",
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--bg-tertiary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+          onClick={() => setOrderEnabled(!orderEnabled)}
         >
-          <input
-            type="checkbox"
-            checked={orderEnabled}
-            onChange={(e) => setOrderEnabled(e.target.checked)}
-          />
-          Enable orderBy
-        </label>
+          {/* Custom Toggle Switch */}
+          <div
+            style={{
+              position: "relative",
+              width: "44px",
+              height: "24px",
+              backgroundColor: orderEnabled ? "var(--primary)" : "var(--border-medium)",
+              borderRadius: "12px",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              flexShrink: 0,
+              boxShadow: orderEnabled 
+                ? "0 2px 4px rgba(99, 102, 241, 0.3)" 
+                : "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "2px",
+                left: orderEnabled ? "22px" : "2px",
+                width: "20px",
+                height: "20px",
+                backgroundColor: "white",
+                borderRadius: "50%",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                transform: orderEnabled ? "scale(1)" : "scale(0.9)",
+              }}
+            />
+          </div>
+          <span>Enable orderBy</span>
+        </div>
 
         {orderEnabled && (
           <>
-            <label style={{ gridColumn: "span 2" }}>orderBy.name</label>
+            <label 
+              style={{ 
+                gridColumn: "span 2",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                color: "var(--text-primary)",
+                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+                display: "flex",
+                alignItems: "center",
+                margin: 0,
+              }}
+            >
+              orderBy.name
+            </label>
             <input
-              style={{ gridColumn: "span 2" }}
+              style={{ 
+                gridColumn: "span 2",
+                padding: "8px 12px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+                transition: "border-color 0.2s ease",
+                position: "relative",
+                zIndex: 10,
+              }}
               value={orderField}
               onChange={(e) => setOrderField(e.target.value)}
               placeholder="__Updated / __Created / name …"
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--primary)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--border-light)";
+              }}
             />
 
-            <label style={{ gridColumn: "span 1" }}>dir</label>
+            <label 
+              style={{ 
+                gridColumn: "span 1",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                color: "var(--text-primary)",
+                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+                display: "flex",
+                alignItems: "center",
+                margin: 0,
+              }}
+            >
+              direction
+            </label>
             <select
-              style={{ gridColumn: "span 1" }}
+              style={{ 
+                gridColumn: "span 1",
+                padding: "8px 12px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
+                cursor: "pointer",
+                transition: "border-color 0.2s ease",
+                position: "relative",
+                zIndex: 999,
+              }}
               value={orderDir}
               onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--primary)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--border-light)";
+              }}
             >
               <option value="ASC">ASC</option>
               <option value="DESC">DESC</option>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildSchemaFromIntrospection } from "@/lib/graphql/schema";
 import {
   buildOperation,
@@ -50,9 +50,51 @@ function collectValuesFromSelections(
   return acc;
 }
 
+// Helper functions for localStorage
+const getStoredCredentials = () => {
+  if (typeof window === "undefined") return { endpoint: "", token: "" };
+  try {
+    const stored = localStorage.getItem("graphql-builder-credentials");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        endpoint: parsed.endpoint || "",
+        token: parsed.token || "",
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to load stored credentials:", error);
+  }
+  return { endpoint: "", token: "" };
+};
+
+const saveCredentials = (endpoint: string, token: string) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("graphql-builder-credentials", JSON.stringify({
+      endpoint,
+      token,
+      savedAt: new Date().toISOString(),
+    }));
+  } catch (error) {
+    console.warn("Failed to save credentials:", error);
+  }
+};
+
+const clearStoredCredentials = () => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem("graphql-builder-credentials");
+  } catch (error) {
+    console.warn("Failed to clear credentials:", error);
+  }
+};
+
 export default function Home() {
+  const storedCreds = getStoredCredentials();
+  
   const [endpoint, setEndpoint] = useState<string>(
-    process.env.NEXT_PUBLIC_XM_ENDPOINT || ""
+    storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || ""
   );
 
   const [resetTick, setResetTick] = useState(0);
@@ -61,9 +103,11 @@ export default function Home() {
   const [searchGroup, setSearchGroup] = useState<"AND" | "OR">("AND");
   const [searchConds, setSearchConds] = useState<any[]>([]);
 
-  const [token, setToken] = useState<string>("");
+  const [token, setToken] = useState<string>(storedCreds.token || "");
   const [schema, setSchema] = useState<GraphQLSchema | null>(null);
   const [connectError, setConnectError] = useState<string | null>(null);
+  const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = useState(false);
+  const [isAutoConnecting, setIsAutoConnecting] = useState(false);
 
   const [rootFieldName, setRootFieldName] = useState<string | null>(null);
   const [rootArgs, setRootArgs] = useState<Record<string, unknown>>({});
@@ -99,7 +143,7 @@ export default function Home() {
     setResetTick((t) => t + 1);
   }, [rootFieldName]);
 
-  async function connect() {
+  const connect = useCallback(async () => {
     setConnectError(null);
     const parsed = ConnectSchema.safeParse({
       endpoint,
@@ -121,7 +165,89 @@ export default function Home() {
     }
     const sch = buildSchemaFromIntrospection(json);
     setSchema(sch);
-  }
+    
+    // Save credentials on successful connection
+    saveCredentials(endpoint, token);
+  }, [endpoint, token]);
+
+  // Clear stored credentials
+  const handleClearCredentials = () => {
+    clearStoredCredentials();
+    setEndpoint(process.env.NEXT_PUBLIC_XM_ENDPOINT || "");
+    setToken("");
+    setSchema(null);
+    setConnectError(null);
+    setHasAttemptedAutoConnect(false);
+  };
+
+  // Auto-connect on page load if credentials are saved
+  useEffect(() => {
+    // Only run once on mount
+    if (hasAttemptedAutoConnect) return;
+    
+    const storedCreds = getStoredCredentials();
+    console.log("Checking auto-connect conditions:", {
+      hasEndpoint: !!storedCreds.endpoint,
+      hasToken: !!storedCreds.token,
+      hasSchema: !!schema,
+      hasAttempted: hasAttemptedAutoConnect,
+      hasError: !!connectError
+    });
+    
+    if (
+      storedCreds.endpoint && 
+      storedCreds.token && 
+      !schema && 
+      !connectError
+    ) {
+      console.log("Starting auto-connect...", { 
+        endpoint: storedCreds.endpoint, 
+        hasToken: !!storedCreds.token 
+      });
+      
+      setHasAttemptedAutoConnect(true);
+      setIsAutoConnecting(true);
+      
+      // Auto-connect immediately without setTimeout to avoid cleanup issues
+      (async () => {
+        try {
+          console.log("Calling connect function directly...");
+          setConnectError(null);
+          const parsed = ConnectSchema.safeParse({
+            endpoint: storedCreds.endpoint,
+            token: storedCreds.token || undefined,
+          });
+          
+          if (!parsed.success) {
+            throw new Error(parsed.error.errors[0]?.message || "Invalid credentials");
+          }
+          
+          console.log("Making API call to /api/schema...");
+          const r = await fetch("/api/schema", {
+            method: "POST",
+            body: JSON.stringify(parsed.data),
+            headers: { "Content-Type": "application/json" },
+          });
+          
+          const json = await r.json();
+          if (!r.ok || json.error) {
+            throw new Error(json.error || "Failed to introspect.");
+          }
+          
+          const sch = buildSchemaFromIntrospection(json);
+          setSchema(sch);
+          saveCredentials(storedCreds.endpoint, storedCreds.token);
+          console.log("Auto-connect completed successfully");
+        } catch (error) {
+          console.error("Auto-connect failed:", error);
+          setConnectError("Auto-connect failed: " + (error as Error).message);
+        } finally {
+          console.log("Resetting auto-connecting state");
+          setIsAutoConnecting(false);
+        }
+      })();
+    }
+  }, []); // Empty dependency array - only run once on mount
 
   const { queryText, complexity, warnLevel } = useMemo(() => {
     console.log("Query generation triggered with:", {
@@ -183,6 +309,27 @@ export default function Home() {
         {
           ...only,
           args: literalArgs,
+          children: hasChildren ? only.children : defaultChildren,
+        },
+      ];
+    }
+
+    // 2.1) For the layout root, ensure default selection (keep arguments as variables)
+    if (rootFieldName === "layout" && mergedSelectionsBase.length === 1) {
+      const only = mergedSelectionsBase[0];
+
+      // Ensure default selection if empty
+      const hasChildren = (only.children ?? []).length > 0;
+      const defaultChildren = [
+        {
+          field: "item",
+          children: [{ field: "rendered" }],
+        },
+      ];
+
+      mergedSelections = [
+        {
+          ...only,
           children: hasChildren ? only.children : defaultChildren,
         },
       ];
@@ -326,6 +473,8 @@ export default function Home() {
         connect={connect}
         error={connectError}
         schema={schema}
+        onClearCredentials={handleClearCredentials}
+        isAutoConnecting={isAutoConnecting}
       />
       <div style={{ background: "var(--bg-primary)" }}>
         {!schema ? (
@@ -426,9 +575,9 @@ export default function Home() {
               />
             </div>
             {rootFieldName && (
-              <div style={{ flex: 1, overflow: "auto" }}>
+              <div style={{ flex: 1, overflow: "visible" }}>
                 {rootFieldName === "search" && (
-                  <div style={{ padding: "0 16px" }}>
+                  <div style={{ padding: "0 16px", overflow: "visible", position: "relative" }}>
                     <SearchBuilder
                       group={searchGroup}
                       key={`search-${resetTick}`} 

@@ -23,65 +23,78 @@ export function ComplexityBar({ value }:{ value:number }){
   }
   
   return (
-    <div className="card">
-      <div className="card-body">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: 'var(--space-4)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span style={{ 
-              fontSize: '0.875rem', 
-              fontWeight: '600',
-              color: 'var(--text-secondary)'
-            }}>
-              Complexity Score
-            </span>
-            <span className={`badge ${status}`} style={{ 
-              background: bgColor, 
-              color: textColor,
-              fontSize: '0.75rem'
-            }}>
-              {status.toUpperCase()}
-            </span>
-          </div>
+    <div style={{
+      background: 'var(--bg-primary)',
+      borderRadius: '6px',
+      border: '1px solid var(--border-light)',
+      padding: '8px 12px',
+      marginBottom: '12px'
+    }}>
+      {/* Header with title and score */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '6px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ 
-            fontFamily: 'JetBrains Mono, Fira Code, Monaco, Consolas, monospace',
-            fontSize: '1.25rem',
-            fontWeight: '600',
-            color: statusColor
+            fontSize: '0.8rem', 
+            fontWeight: '500',
+            color: 'var(--text-primary)'
           }}>
-            {value.toFixed(1)}
+            Complexity
+          </span>
+          <span style={{ 
+            background: bgColor, 
+            color: textColor,
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            padding: '1px 4px',
+            borderRadius: '3px',
+            textTransform: 'uppercase'
+          }}>
+            {status}
           </span>
         </div>
-        
-        <div style={{ 
-          height: '12px', 
-          background: 'var(--bg-tertiary)', 
-          borderRadius: 'var(--radius-sm)',
-          overflow: 'hidden',
-          marginBottom: 'var(--space-3)'
+        <span style={{ 
+          fontFamily: 'JetBrains Mono, Fira Code, Monaco, Consolas, monospace',
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          color: statusColor
         }}>
-          <div style={{ 
-            width: `${pct}%`, 
-            height: '100%', 
-            background: statusColor,
-            transition: 'width 0.3s ease'
-          }} />
-        </div>
-        
+          {value.toFixed(1)}
+        </span>
+      </div>
+      
+      {/* Ultra-compact progress bar */}
+      <div style={{ 
+        height: '4px', 
+        background: 'var(--bg-tertiary)', 
+        borderRadius: '2px',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
         <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          fontSize: '0.75rem',
-          color: 'var(--text-muted)'
-        }}>
-          <span>Safe: &lt; {warn}</span>
-          <span>Warning: ≥ {warn}</span>
-          <span>Block: ≥ {block}</span>
-        </div>
+          width: `${pct}%`, 
+          height: '100%', 
+          background: statusColor,
+          borderRadius: '2px',
+          transition: 'width 0.3s ease'
+        }} />
+      </div>
+      
+      {/* Ultra-compact legend */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        fontSize: '0.65rem',
+        color: 'var(--text-muted)',
+        marginTop: '4px'
+      }}>
+        <span>Safe: &lt; {warn}</span>
+        <span>Warning: ≥ {warn}</span>
+        <span>Block: ≥ {block}</span>
       </div>
     </div>
   );

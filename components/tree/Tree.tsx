@@ -18,6 +18,7 @@ export function SelectionPanel(props: {
   onRootArgsChange: (s: Record<string, unknown>) => void;
   onLookupTemplatePath: (id: string) => Promise<string | undefined>;
   templatePathCache: Record<string, string>;
+  getItemTemplates: (itemPath: string, language?: string) => Promise<string[]>;
 }) {
   const {
     schema,
@@ -232,14 +233,18 @@ export function SelectionPanel(props: {
       {isObjectType(rootType) ||
       isInterfaceType(rootType) ||
       isUnionType(rootType) ? (
-        <NodeFields
-          schema={schema}
-          parentType={rootType as any}
-          selections={selection}
-          onChange={onSelectionChange}
-          onLookupTemplatePath={props.onLookupTemplatePath}
-          templatePathCache={props.templatePathCache}
-        />
+                 <NodeFields
+           schema={schema}
+           parentType={rootType as any}
+           selections={selection}
+           onChange={onSelectionChange}
+           onLookupTemplatePath={props.onLookupTemplatePath}
+           templatePathCache={props.templatePathCache}
+           getItemTemplates={props.getItemTemplates}
+           rootField={rootField}
+           rootArgs={rootArgs}
+           selectionPath={[]}
+         />
       ) : (
         <div
           style={{
@@ -279,6 +284,10 @@ export function NodeFields({
   onChange,
   onLookupTemplatePath,
   templatePathCache,
+  getItemTemplates,
+  rootField,
+  rootArgs,
+  selectionPath = [],
 }: {
   schema: GraphQLSchema;
   parentType: any;
@@ -286,9 +295,16 @@ export function NodeFields({
   onChange: (s: Selection[]) => void;
   onLookupTemplatePath: (id: string) => Promise<string | undefined>;
   templatePathCache: Record<string, string>;
+  getItemTemplates?: (itemPath: string, language?: string) => Promise<string[]>;
+  rootField?: string;
+  rootArgs?: Record<string, unknown>;
+  selectionPath?: string[];
 }) {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [itemTemplates, setItemTemplates] = useState<string[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [showAllTemplates, setShowAllTemplates] = useState(false);
   const perPage = 8;
 
   // Reset to page 1 when filter changes
@@ -296,15 +312,119 @@ export function NodeFields({
     setPage(1);
   }, [filter]);
 
+  // Load templates based on selection context
+  useEffect(() => {
+    async function loadItemTemplates() {
+      // Only filter templates for direct item queries at root level
+      // For nested item fields (like children, related items), show all templates
+      const isRootLevelItemQuery = rootField === "item" && selectionPath.length === 0;
+      
+      if (
+        isRootLevelItemQuery && 
+        getItemTemplates && 
+        rootArgs?.path &&
+        typeof rootArgs.path === "string"
+      ) {
+        setIsLoadingTemplates(true);
+        try {
+          const templates = await getItemTemplates(
+            rootArgs.path as string, 
+            rootArgs.language as string
+          );
+          console.log("🔍 Template Debug Info:", {
+            itemPath: rootArgs.path,
+            apiReturnedTemplates: templates
+          });
+          
+          setItemTemplates(templates);
+        } catch (error) {
+          console.error("Failed to load item templates:", error);
+          setItemTemplates([]);
+        } finally {
+          setIsLoadingTemplates(false);
+        }
+      } else {
+        // For nested item selections or other queries, don't filter templates
+        setItemTemplates([]);
+      }
+    }
+
+    loadItemTemplates();
+  }, [rootField, rootArgs?.path, rootArgs?.language, getItemTemplates, selectionPath]);
+
   if (isUnionType(parentType) || isInterfaceType(parentType)) {
     const types = isUnionType(parentType)
       ? parentType.getTypes()
       : schema.getPossibleTypes(parentType);
-    const entries = types.map((t: any) => {
+    
+    let entries = types.map((t: any) => {
       const info = parseTemplateInfo(t.name);
       const path = info.id ? templatePathCache[info.id] : undefined;
       return { t, pretty: info.pretty, id: info.id, path };
     });
+
+    // Filter by item templates if available and "Show All" is not checked
+    if (itemTemplates.length > 0 && !showAllTemplates) {
+      console.log("🔍 Detailed Template Matching Debug:", {
+        apiReturnedTemplates: itemTemplates,
+        availableSchemaTypes: types.map((t: any) => ({ name: t.name, pretty: parseTemplateInfo(t.name).pretty })),
+        totalSchemaTypes: types.length
+      });
+      
+      entries = entries.filter((e) => {
+        const info = parseTemplateInfo(e.t.name);
+        return itemTemplates.some(templateName => {
+          // Try multiple matching strategies
+          const matches = [
+            // Exact GraphQL type name match
+            e.t.name === templateName,
+            // Pretty name match (case insensitive)
+            info.pretty.toLowerCase() === templateName.toLowerCase(),
+            // Template name with common variations
+            info.pretty.toLowerCase().replace(/\s+/g, '') === templateName.toLowerCase().replace(/\s+/g, ''),
+            // Try removing common prefixes/suffixes
+            info.pretty.toLowerCase().replace(/template$/i, '').trim() === templateName.toLowerCase().replace(/template$/i, '').trim(),
+            // Try with "Template" suffix added to the API template name
+            info.pretty.toLowerCase() === (templateName + ' template').toLowerCase(),
+            // Try partial matches for compound names
+            info.pretty.toLowerCase().includes(templateName.toLowerCase()) && templateName.length > 3,
+            templateName.toLowerCase().includes(info.pretty.toLowerCase()) && info.pretty.length > 3
+          ];
+          
+          const matched = matches.some(Boolean);
+          if (matched) {
+            console.log(`✅ Template match found:`, {
+              graphqlType: e.t.name,
+              prettyName: info.pretty,
+              apiTemplate: templateName,
+              matchStrategy: matches.findIndex(Boolean)
+            });
+          }
+          return matched;
+        });
+      });
+      
+      // Log unmatched templates
+      const unmatchedTemplates = itemTemplates.filter(templateName => 
+        !types.some((t: any) => {
+          const info = parseTemplateInfo(t.name);
+          return [
+            t.name === templateName,
+            info.pretty.toLowerCase() === templateName.toLowerCase(),
+            info.pretty.toLowerCase().replace(/\s+/g, '') === templateName.toLowerCase().replace(/\s+/g, ''),
+            info.pretty.toLowerCase().replace(/template$/i, '').trim() === templateName.toLowerCase().replace(/template$/i, '').trim(),
+            info.pretty.toLowerCase() === (templateName + ' template').toLowerCase(),
+            info.pretty.toLowerCase().includes(templateName.toLowerCase()) && templateName.length > 3,
+            templateName.toLowerCase().includes(info.pretty.toLowerCase()) && info.pretty.length > 3
+          ].some(Boolean);
+        })
+      );
+      
+      if (unmatchedTemplates.length > 0) {
+        console.warn("⚠️ Templates from API that didn't match any GraphQL types:", unmatchedTemplates);
+      }
+    }
+    
     const lower = filter.trim().toLowerCase();
     const filtered = lower
       ? entries.filter(
@@ -340,29 +460,182 @@ export function NodeFields({
             background: "var(--bg-secondary)",
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "1rem",
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-            Template Types ({filtered.length})
-          </h3>
+                       <h3
+               style={{
+                 margin: 0,
+                 display: "flex",
+                 alignItems: "center",
+                 gap: "8px",
+                 fontSize: "1rem",
+               }}
+             >
+               <svg
+                 width="16"
+                 height="16"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 strokeWidth="2"
+               >
+                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+               </svg>
+               Template Types ({filtered.length})
+               {itemTemplates.length > 0 && !showAllTemplates && (
+                 <span style={{
+                   fontSize: "0.75rem",
+                   color: "var(--primary)",
+                   background: "var(--primary-light)",
+                   padding: "2px 6px",
+                   borderRadius: "4px",
+                   fontWeight: "600"
+                 }}>
+                   FILTERED FOR ITEM
+                 </span>
+               )}
+               {itemTemplates.length > 0 && showAllTemplates && (
+                 <span style={{
+                   fontSize: "0.75rem",
+                   color: "var(--text-secondary)",
+                   background: "var(--bg-tertiary)",
+                   padding: "2px 6px",
+                   borderRadius: "4px",
+                   fontWeight: "500"
+                 }}>
+                   SHOWING ALL TEMPLATES
+                 </span>
+               )}
+               {selectionPath.length > 0 && itemTemplates.length === 0 && (
+                 <span style={{
+                   fontSize: "0.75rem",
+                   color: "var(--text-secondary)",
+                   background: "var(--bg-tertiary)",
+                   padding: "2px 6px",
+                   borderRadius: "4px",
+                   fontWeight: "500"
+                 }}>
+                   NESTED FIELD - ALL TEMPLATES
+                 </span>
+               )}
+               {isLoadingTemplates && (
+                 <span style={{
+                   fontSize: "0.75rem",
+                   color: "var(--text-muted)",
+                   fontStyle: "italic"
+                 }}>
+                   Loading templates...
+                 </span>
+               )}
+             </h3>
         </div>
         <div style={{ padding: "16px" }}>
+          {/* Template filtering controls */}
+          {itemTemplates.length > 0 && (
+            <div style={{
+              marginBottom: "16px",
+              padding: "16px",
+              background: showAllTemplates ? "var(--bg-tertiary)" : "var(--primary-light)",
+              borderRadius: "8px",
+              border: showAllTemplates ? "1px solid var(--border-medium)" : "1px solid var(--primary)",
+              transition: "all 0.2s ease"
+            }}>
+              <div style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px"
+              }}>
+                {/* Custom styled checkbox */}
+                <div 
+                  onClick={() => setShowAllTemplates(!showAllTemplates)}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "4px",
+                    border: showAllTemplates ? "2px solid var(--text-secondary)" : "2px solid var(--primary)",
+                    background: showAllTemplates ? "var(--text-secondary)" : "var(--primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    flexShrink: 0,
+                    marginTop: "1px"
+                  }}
+                >
+                  {showAllTemplates && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20,6 9,17 4,12" />
+                    </svg>
+                  )}
+                  {!showAllTemplates && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                      <path d="M9 12l2 2 4-4" />
+                    </svg>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1 }}>
+                  <div 
+                    onClick={() => setShowAllTemplates(!showAllTemplates)}
+                    style={{
+                      cursor: "pointer",
+                      marginBottom: "4px"
+                    }}
+                  >
+                    <span style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: showAllTemplates ? "var(--text-secondary)" : "var(--primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      Show all templates
+                      {showAllTemplates && (
+                        <span style={{
+                          fontSize: "0.7rem",
+                          background: "var(--text-secondary)",
+                          color: "white",
+                          padding: "2px 6px",
+                          borderRadius: "10px",
+                          fontWeight: "500"
+                        }}>
+                          ON
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  
+                  <div style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    lineHeight: "1.3"
+                  }}>
+                    {showAllTemplates ? (
+                      <>
+                        <span style={{ fontWeight: "500" }}>All {types.length} templates</span> are now visible for maximum flexibility
+                      </>
+                    ) : (
+                      <>
+                        Showing <span style={{ fontWeight: "500" }}>{filtered.length} item-specific templates</span> for focused selection
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status indicator */}
+                <div style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: showAllTemplates ? "var(--text-secondary)" : "var(--primary)",
+                  flexShrink: 0,
+                  marginTop: "5px"
+                }} />
+              </div>
+            </div>
+          )}
+          
           <input
             placeholder="Filter template name / id / path…"
             value={filter}
@@ -547,6 +820,10 @@ export function NodeFields({
                     }
                     onLookupTemplatePath={onLookupTemplatePath}
                     templatePathCache={templatePathCache}
+                    getItemTemplates={getItemTemplates}
+                    rootField={rootField}
+                    rootArgs={rootArgs}
+                    selectionPath={[...selectionPath, t.name]}
                   />
                 </div>
               </details>
@@ -863,6 +1140,10 @@ export function NodeFields({
                       }
                       onLookupTemplatePath={onLookupTemplatePath}
                       templatePathCache={templatePathCache}
+                      getItemTemplates={getItemTemplates}
+                      rootField={rootField}
+                      rootArgs={rootArgs}
+                      selectionPath={[...selectionPath, f.name]}
                     />
                   </div>
                 )}

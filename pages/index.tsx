@@ -463,6 +463,68 @@ export default function Home() {
     }
   }
 
+  // Get templates for a specific item path (template + inherited templates)
+  const itemTemplateCache = useRef<Record<string, string[]>>({});
+  async function getItemTemplates(itemPath: string, language?: string): Promise<string[]> {
+    const cacheKey = `${itemPath}|${language || 'en'}`;
+    if (itemTemplateCache.current[cacheKey]) {
+      return itemTemplateCache.current[cacheKey];
+    }
+
+    if (!itemPath) return [];
+    
+    // Query to get template information including inheritance chain
+    const query = `query GetItemTemplates($path: String!, $language: String!) {
+      item(path: $path, language: $language) {
+        template {
+          name
+          baseTemplates {
+            name
+          }
+        }
+      }
+    }`;
+    
+    const body = {
+      endpoint,
+      token: token || undefined,
+      query,
+      variables: { path: itemPath, language: language || 'en' },
+    };
+    
+    try {
+      const r = await fetch("/api/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await r.json();
+      
+      const templates: string[] = [];
+      const template = json?.data?.item?.template;
+      
+      if (template?.name) {
+        templates.push(template.name);
+        
+        // Add base templates (inheritance chain)
+        if (template.baseTemplates) {
+          for (const baseTemplate of template.baseTemplates) {
+            if (baseTemplate.name) {
+              templates.push(baseTemplate.name);
+            }
+          }
+        }
+      }
+      
+      // Cache the result
+      itemTemplateCache.current[cacheKey] = templates;
+      return templates;
+    } catch (error) {
+      console.error('Failed to fetch item templates:', error);
+      return [];
+    }
+  }
+
   return (
     <>
       <Head>
@@ -626,6 +688,7 @@ export default function Home() {
                   onRootArgsChange={setRootArgs}
                   onLookupTemplatePath={lookupTemplatePath}
                   templatePathCache={templatePathCache.current}
+                  getItemTemplates={getItemTemplates}
                 />
               </div>
             )}

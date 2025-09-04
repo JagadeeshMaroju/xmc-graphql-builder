@@ -16,7 +16,7 @@ export default async function handler(
   const url = endpoint || process.env.XM_GRAPHQL_ENDPOINT;
   if (!url) return res.status(400).json({ error: "Missing GraphQL endpoint." });
   try {
-    const r = await fetch(`${url}?sc_apikey=${token}`, {
+    const r = await fetch(`https://edge-platform.sitecorecloud.io/v1/content/api/graphql/v1?sitecoreContextId=${token}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: getIntrospectionQuery() }),

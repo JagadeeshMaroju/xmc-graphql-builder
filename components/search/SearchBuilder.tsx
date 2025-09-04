@@ -29,7 +29,7 @@ export function SearchBuilder({
   group: GroupOp;
   setGroup: (g: GroupOp) => void;
   conditions: SearchCondition[];
-  setConditions: (c: SearchCondition[]) => void;
+  setConditions: React.Dispatch<React.SetStateAction<SearchCondition[]>>;
 
   // pagination (left as variables in the printed document)
   pageSize: number;

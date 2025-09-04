@@ -57,19 +57,53 @@ export function QueryPanel({
         />
         <div
           style={{
-            marginTop: "var(--space-4)",
+            marginTop: "var(--space-5)",
             display: "flex",
-            gap: "var(--space-3)",
+            gap: "24px",
             flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "flex-start",
           }}
         >
           <button
             onClick={run}
             disabled={!canRun || loading}
             style={{
-              minWidth: "120px",
-              background:
-                canRun && !loading ? "var(--primary)" : "var(--text-muted)",
+              minWidth: "130px",
+              height: "40px",
+              background: canRun && !loading 
+                ? "var(--primary)"
+                : "var(--text-muted)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: "0 var(--space-4)",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              cursor: canRun && !loading ? "pointer" : "not-allowed",
+              transition: "all 0.2s ease",
+              opacity: canRun && !loading ? 1 : 0.6,
+              boxShadow: canRun && !loading 
+                ? "0 2px 4px rgba(99, 102, 241, 0.2)" 
+                : "none"
+            }}
+            onMouseEnter={(e) => {
+              if (canRun && !loading) {
+                e.currentTarget.style.background = "var(--primary-hover)";
+                e.currentTarget.style.boxShadow = "0 4px 8px rgba(99, 102, 241, 0.3)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canRun && !loading) {
+                e.currentTarget.style.background = "var(--primary)";
+                e.currentTarget.style.boxShadow = "0 2px 4px rgba(99, 102, 241, 0.2)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }
             }}
           >
             {loading ? (
@@ -106,7 +140,36 @@ export function QueryPanel({
           <button
             onClick={copy}
             className="secondary"
-            style={{ minWidth: "120px" }}
+            style={{ 
+              minWidth: "130px",
+              height: "40px",
+              background: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              border: "1px solid var(--border-medium)",
+              borderRadius: "8px",
+              padding: "0 var(--space-4)",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--primary)";
+              e.currentTarget.style.color = "var(--primary)";
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-medium)";
+              e.currentTarget.style.color = "var(--text-primary)";
+              e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.05)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
             <svg
               width="16"

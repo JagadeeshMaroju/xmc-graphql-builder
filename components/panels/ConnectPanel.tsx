@@ -1,8 +1,8 @@
 import { GraphQLSchema } from 'graphql';
 import SchemaExplorer from '@/components/SchemaExplorer';
 
-export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, error, schema, onClearCredentials, isAutoConnecting, isConnecting }:{
-  endpoint: string; setEndpoint: (s: string) => void; token: string; setToken: (s: string) => void; connect: () => void; error: string | null; schema: GraphQLSchema | null; onClearCredentials?: () => void; isAutoConnecting?: boolean; isConnecting?: boolean;
+export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, error, schema, onClearCredentials, isAutoConnecting, isConnecting, appContext }:{
+  endpoint: string; setEndpoint: (s: string) => void; token: string; setToken: (s: string) => void; connect: () => void; error: string | null; schema: GraphQLSchema | null; onClearCredentials?: () => void; isAutoConnecting?: boolean; isConnecting?: boolean; appContext?: any;
 }){
   return (
     <div style={{ 
@@ -33,8 +33,32 @@ export function ConnectPanel({ endpoint, setEndpoint, token, setToken, connect, 
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
         </div>
-        <h2 style={{ margin: 0, fontSize: "1.5rem" }}>GraphQL Builder</h2>
+        <h2 style={{ margin: 0, fontSize: "1.5rem" }}>GraphQL Query Builder</h2>
       </div>
+      
+      {/* XM Cloud Context Status */}
+      {appContext?.resourceAccess?.[0]?.context?.preview && (
+        <div style={{
+          marginBottom: "var(--space-4)",
+          padding: "var(--space-2) var(--space-3)",
+          background: "#e8f5e8",
+          border: "1px solid #4caf50",
+          borderRadius: "4px",
+          fontSize: "0.85rem",
+          color: "#2e7d32",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px"
+        }}>
+          <span>🔑</span>
+          <div>
+            <div style={{ fontWeight: "500" }}>XM Cloud Context Detected</div>
+            <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>
+              Using Sitecore Context ID for authentication
+            </div>
+          </div>
+        </div>
+      )}
       
       <div style={{ marginBottom: "var(--space-6)" }}>
         <label>Endpoint URL</label>

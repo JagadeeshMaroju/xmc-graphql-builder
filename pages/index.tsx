@@ -15,16 +15,21 @@ import { DEFAULT_WEIGHTS, scoreField } from "@/lib/graphql/complexity";
 import type { GraphQLSchema, GraphQLField } from "graphql";
 import { getNamedType } from "graphql";
 import { z } from "zod";
+import { useMarketplaceClient } from "@/lib/hooks/useMarketplaceClient";
 
-import { ConnectPanel } from "@/components/panels/ConnectPanel";
 import { RootFieldList } from "@/components/panels/RootFieldList";
 import { SelectionPanel } from "@/components/tree/Tree";
 import { ComplexityBar } from "@/components/panels/ComplexityBar";
 import { QueryPanel } from "@/components/panels/QueryPanel";
+import SchemaExplorer from "@/components/SchemaExplorer";
 import {
   SearchBuilder,
   type SearchCondition,
 } from "@/components/search/SearchBuilder";
+import {
+  ApplicationContext,
+  QueryResult,
+} from "@sitecore-marketplace-sdk/client";
 
 const ConnectSchema = z.object({
   endpoint: z.string().url(),
@@ -53,11 +58,16 @@ function collectValuesFromSelections(
 
 // Helper functions for localStorage
 const getStoredCredentials = () => {
-  if (typeof window === "undefined") return { endpoint: "", token: "" };
+  if (typeof window === "undefined") {
+    console.log("🌐 Server-side: returning empty credentials");
+    return { endpoint: "", token: "" };
+  }
   try {
     const stored = localStorage.getItem("graphql-builder-credentials");
+    console.log("💾 Raw stored data:", stored);
     if (stored) {
       const parsed = JSON.parse(stored);
+      console.log("📦 Parsed credentials:", parsed);
       return {
         endpoint: parsed.endpoint || "",
         token: parsed.token || "",
@@ -66,17 +76,31 @@ const getStoredCredentials = () => {
   } catch (error) {
     console.warn("Failed to load stored credentials:", error);
   }
+  console.log("❌ No stored credentials found");
   return { endpoint: "", token: "" };
 };
 
 const saveCredentials = (endpoint: string, token: string) => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    console.log("🌐 Server-side: cannot save credentials");
+    return;
+  }
   try {
-    localStorage.setItem("graphql-builder-credentials", JSON.stringify({
+    const credentials = {
       endpoint,
       token,
       savedAt: new Date().toISOString(),
-    }));
+    };
+    console.log("💾 Saving credentials:", {
+      endpoint,
+      token: token ? `${token.substring(0, 10)}...` : 'empty',
+      savedAt: credentials.savedAt,
+    });
+    localStorage.setItem(
+      "graphql-builder-credentials",
+      JSON.stringify(credentials)
+    );
+    console.log("✅ Credentials saved successfully");
   } catch (error) {
     console.warn("Failed to save credentials:", error);
   }
@@ -92,24 +116,30 @@ const clearStoredCredentials = () => {
 };
 
 export default function Home() {
-  const storedCreds = getStoredCredentials();
-  
-  const [endpoint, setEndpoint] = useState<string>(
-    storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || ""
-  );
+  const { client, error, isInitialized, isLoading } = useMarketplaceClient();
+  const [appContext, setAppContext] = useState<ApplicationContext>();
 
-  const [resetTick, setResetTick] = useState(0);
+  useEffect(() => {
+    if (!error && isInitialized && client) {
+      client
+        .query("application.context")
+        .then((res: QueryResult<"application.context">) => {
+          setAppContext(res.data);
+        })
+        .catch((error) => {
+          console.error("Error retrieving application.context:", error);
+        });
+    }
+  }, [client, error, isInitialized]);
+  const storedCreds = getStoredCredentials();
 
   // search-specific UI state (if not already present)
   const [searchGroup, setSearchGroup] = useState<"AND" | "OR">("AND");
   const [searchConds, setSearchConds] = useState<any[]>([]);
 
-  const [token, setToken] = useState<string>(storedCreds.token || "");
   const [schema, setSchema] = useState<GraphQLSchema | null>(null);
   const [connectError, setConnectError] = useState<string | null>(null);
-  const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = useState(false);
   const [isAutoConnecting, setIsAutoConnecting] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
 
   const [rootFieldName, setRootFieldName] = useState<string | null>(null);
   const [rootArgs, setRootArgs] = useState<Record<string, unknown>>({});
@@ -141,121 +171,88 @@ export default function Home() {
     setPageSize(10);
     setAfter("");
 
-    // bump tick so components like SearchBuilder remount (resetting their internal state)
-    setResetTick((t) => t + 1);
   }, [rootFieldName]);
 
-  const connect = useCallback(async () => {
-    setConnectError(null);
-    setIsConnecting(true);
-    
-    try {
-      const parsed = ConnectSchema.safeParse({
-        endpoint,
-        token: token || undefined,
-      });
-      if (!parsed.success) {
-        setConnectError(parsed.error.errors[0]?.message);
-        return;
-      }
-      const r = await fetch("/api/schema", {
-        method: "POST",
-        body: JSON.stringify(parsed.data),
-        headers: { "Content-Type": "application/json" },
-      });
-      const json = await r.json();
-      if (!r.ok || json.error) {
-        setConnectError(json.error || "Failed to introspect.");
-        return;
-      }
-      const sch = buildSchemaFromIntrospection(json);
-      setSchema(sch);
-      
-      // Save credentials on successful connection
-      saveCredentials(endpoint, token);
-    } finally {
-      setIsConnecting(false);
-    }
-  }, [endpoint, token]);
 
-  // Clear stored credentials
-  const handleClearCredentials = () => {
-    clearStoredCredentials();
-    setEndpoint(process.env.NEXT_PUBLIC_XM_ENDPOINT || "");
-    setToken("");
-    setSchema(null);
-    setConnectError(null);
-    setHasAttemptedAutoConnect(false);
-  };
-
-  // Auto-connect on page load if credentials are saved
+  // Load schema directly on mount
   useEffect(() => {
-    // Only run once on mount
-    if (hasAttemptedAutoConnect) return;
-    
-    const storedCreds = getStoredCredentials();
-    console.log("Checking auto-connect conditions:", {
-      hasEndpoint: !!storedCreds.endpoint,
-      hasToken: !!storedCreds.token,
-      hasSchema: !!schema,
-      hasAttempted: hasAttemptedAutoConnect,
-      hasError: !!connectError
-    });
-    
-    if (
-      storedCreds.endpoint && 
-      storedCreds.token && 
-      !schema && 
-      !connectError
-    ) {
-      console.log("Starting auto-connect...", { 
-        endpoint: storedCreds.endpoint, 
-        hasToken: !!storedCreds.token 
-      });
-      
-      setHasAttemptedAutoConnect(true);
-      setIsAutoConnecting(true);
-      
-      // Auto-connect immediately without setTimeout to avoid cleanup issues
-      (async () => {
-        try {
-          console.log("Calling connect function directly...");
-          setConnectError(null);
-          const parsed = ConnectSchema.safeParse({
-            endpoint: storedCreds.endpoint,
-            token: storedCreds.token || undefined,
-          });
-          
-          if (!parsed.success) {
-            throw new Error(parsed.error.errors[0]?.message || "Invalid credentials");
-          }
-          
-          console.log("Making API call to /api/schema...");
-          const r = await fetch("/api/schema", {
-            method: "POST",
-            body: JSON.stringify(parsed.data),
-            headers: { "Content-Type": "application/json" },
-          });
-          
-          const json = await r.json();
-          if (!r.ok || json.error) {
-            throw new Error(json.error || "Failed to introspect.");
-          }
-          
-          const sch = buildSchemaFromIntrospection(json);
-          setSchema(sch);
-          saveCredentials(storedCreds.endpoint, storedCreds.token);
-          console.log("Auto-connect completed successfully");
-        } catch (error) {
-          console.error("Auto-connect failed:", error);
-          setConnectError("Auto-connect failed: " + (error as Error).message);
-        } finally {
-          console.log("Resetting auto-connecting state");
-          setIsAutoConnecting(false);
+    // Only run on client side
+    if (typeof window === "undefined") return;
+
+    // Don't run if we already have a schema or are currently loading
+    if (schema || isAutoConnecting) return;
+
+    console.log("🚀 Loading schema directly on page load...");
+
+    setIsAutoConnecting(true);
+    setConnectError(null);
+
+    // Load schema immediately
+    (async () => {
+      try {
+        // Use XM Cloud token if available, otherwise use stored token, otherwise empty
+        const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
+        const storedCreds = getStoredCredentials();
+        const tokenToUse = xmCloudToken || storedCreds.token || "";
+        
+        // Use stored endpoint or environment variable
+        const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
+        
+        console.log("📋 Using credentials:", {
+          endpoint: endpointToUse,
+          hasToken: !!tokenToUse,
+          tokenSource: xmCloudToken ? 'XM Cloud' : storedCreds.token ? 'stored' : 'none',
+        });
+
+        if (!endpointToUse) {
+          throw new Error("No endpoint available. Please set NEXT_PUBLIC_XM_ENDPOINT environment variable.");
         }
-      })();
+
+        if (!tokenToUse) {
+          throw new Error("No authentication token available. Please ensure you're running in XM Cloud or have stored credentials.");
+        }
+
+    const parsed = ConnectSchema.safeParse({
+          endpoint: endpointToUse,
+          token: tokenToUse,
+    });
+
+    if (!parsed.success) {
+          throw new Error(
+            parsed.error.errors[0]?.message || "Invalid credentials"
+          );
     }
-  }, []); // Empty dependency array - only run once on mount
+
+        console.log("Making API call to /api/schema...");
+    const r = await fetch("/api/schema", {
+      method: "POST",
+      body: JSON.stringify(parsed.data),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const json = await r.json();
+    if (!r.ok || json.error) {
+          throw new Error(json.error || "Failed to introspect.");
+    }
+
+    const sch = buildSchemaFromIntrospection(json);
+    setSchema(sch);
+        
+        // Save credentials for future use
+        if (endpointToUse && tokenToUse) {
+          saveCredentials(endpointToUse, tokenToUse);
+        }
+        
+        console.log("✅ Schema loaded successfully");
+      } catch (error) {
+        console.error("Schema loading failed:", error);
+        setConnectError("Failed to load schema: " + (error as Error).message);
+      } finally {
+        setIsAutoConnecting(false);
+      }
+    })();
+  }, [appContext]); // Re-run when XM Cloud context becomes available
+
 
   const { queryText, complexity, warnLevel } = useMemo(() => {
     console.log("Query generation triggered with:", {
@@ -420,12 +417,19 @@ export default function Home() {
     if (!queryText) return;
     setLoading(true);
     setResult(null);
+    
+    // Get current credentials
+    const storedCreds = getStoredCredentials();
+    const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
+    const tokenToUse = xmCloudToken || storedCreds.token || "";
+    const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
+    
     const r = await fetch("/api/proxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        endpoint,
-        token: token || undefined,
+        endpoint: endpointToUse,
+        token: tokenToUse || undefined,
         query: queryText,
         variables: computedVariables, // <<< use auto variables
       }),
@@ -442,9 +446,15 @@ export default function Home() {
       return templatePathCache.current[templateId];
     if (!templateId) return undefined;
     const query = `query TplPath($id: ID!, $language: String){ item(id: $id, language: $language){ path } }`;
+    // Get current credentials
+    const storedCreds = getStoredCredentials();
+    const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
+    const tokenToUse = xmCloudToken || storedCreds.token || "";
+    const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
+    
     const body = {
-      endpoint,
-      token: token || undefined,
+      endpoint: endpointToUse,
+      token: tokenToUse || undefined,
       query,
       variables: { id: `{${templateId}}` },
     };
@@ -465,14 +475,17 @@ export default function Home() {
 
   // Get templates for a specific item path (template + inherited templates)
   const itemTemplateCache = useRef<Record<string, string[]>>({});
-  async function getItemTemplates(itemPath: string, language?: string): Promise<string[]> {
-    const cacheKey = `${itemPath}|${language || 'en'}`;
+  async function getItemTemplates(
+    itemPath: string,
+    language?: string
+  ): Promise<string[]> {
+    const cacheKey = `${itemPath}|${language || "en"}`;
     if (itemTemplateCache.current[cacheKey]) {
       return itemTemplateCache.current[cacheKey];
     }
 
     if (!itemPath) return [];
-    
+
     // Query to get template information including inheritance chain
     const query = `query GetItemTemplates($path: String!, $language: String!) {
       item(path: $path, language: $language) {
@@ -484,14 +497,20 @@ export default function Home() {
         }
       }
     }`;
+
+    // Get current credentials
+    const storedCreds = getStoredCredentials();
+    const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
+    const tokenToUse = xmCloudToken || storedCreds.token || "";
+    const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
     
     const body = {
-      endpoint,
-      token: token || undefined,
+      endpoint: endpointToUse,
+      token: tokenToUse || undefined,
       query,
-      variables: { path: itemPath, language: language || 'en' },
+      variables: { path: itemPath, language: language || "en" },
     };
-    
+
     try {
       const r = await fetch("/api/proxy", {
         method: "POST",
@@ -499,13 +518,13 @@ export default function Home() {
         body: JSON.stringify(body),
       });
       const json = await r.json();
-      
+
       const templates: string[] = [];
       const template = json?.data?.item?.template;
-      
+
       if (template?.name) {
         templates.push(template.name);
-        
+
         // Add base templates (inheritance chain)
         if (template.baseTemplates) {
           for (const baseTemplate of template.baseTemplates) {
@@ -515,12 +534,12 @@ export default function Home() {
           }
         }
       }
-      
+
       // Cache the result
       itemTemplateCache.current[cacheKey] = templates;
       return templates;
     } catch (error) {
-      console.error('Failed to fetch item templates:', error);
+      console.error("Failed to fetch item templates:", error);
       return [];
     }
   }
@@ -529,31 +548,247 @@ export default function Home() {
     <>
       <Head>
         <title>Sitecore GraphQL Query Builder</title>
-        <meta name="description" content="Build and test GraphQL queries for Sitecore" />
+        <meta
+          name="description"
+          content="Build and test GraphQL queries for Sitecore"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "380px 1fr 1fr",
-          height: "100vh",
-          background: "var(--border-light)",
-          gap: "1px",
+    <div
+      style={{
+        display: "grid",
+          gridTemplateColumns: "400px 1fr 1fr",
+        height: "100vh",
+        background: "var(--border-light)",
+          gap: "2px",
+          boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)"
         }}
       >
-      <ConnectPanel
-        endpoint={endpoint}
-        setEndpoint={setEndpoint}
-        token={token}
-        setToken={setToken}
-        connect={connect}
-        error={connectError}
-        schema={schema}
-        onClearCredentials={handleClearCredentials}
-        isAutoConnecting={isAutoConnecting}
-        isConnecting={isConnecting}
-      />
-      <div style={{ background: "var(--bg-primary)" }}>
+        <div style={{ 
+          background: "var(--bg-primary)",
+          padding: "var(--space-8) var(--space-6)",
+          overflowY: "auto",
+          borderRight: "1px solid var(--border-light)",
+          minHeight: "100vh"
+        }}>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "var(--space-5)",
+            marginBottom: "var(--space-10)",
+            paddingBottom: "var(--space-8)",
+            borderBottom: "1px solid var(--border-light)",
+            position: "relative"
+          }}>
+            <div style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "16px",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              boxShadow: "0 8px 24px rgba(99, 102, 241, 0.3)",
+              position: "relative",
+              overflow: "hidden"
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              <div style={{
+                position: "absolute",
+                top: "-2px",
+                right: "-2px",
+                width: "12px",
+                height: "12px",
+                background: "#10b981",
+                borderRadius: "50%",
+                border: "2px solid white",
+                animation: "pulse 2s infinite"
+              }}></div>
+            </div>
+            <div>
+              <h2 style={{ 
+                margin: 0, 
+                fontSize: "1.75rem", 
+                fontWeight: "700",
+                background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
+              }}>
+                GraphQL Builder
+              </h2>
+              <p style={{ 
+                margin: "4px 0 0 0", 
+                fontSize: "0.9rem", 
+                color: "var(--text-secondary)",
+                fontWeight: "500"
+              }}>
+                Build and test GraphQL queries with ease
+              </p>
+            </div>
+          </div>
+          
+
+          {/* Connection Status */}
+          {isAutoConnecting && (
+            <div style={{
+              marginBottom: "var(--space-4)",
+              padding: "var(--space-4)",
+              background: "linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)",
+              border: "1px solid #ffc107",
+              borderRadius: "12px",
+              fontSize: "0.9rem",
+              color: "#856404",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              boxShadow: "0 4px 12px rgba(255, 193, 7, 0.15)",
+              position: "relative",
+              overflow: "hidden"
+            }}>
+              <div style={{
+                width: "20px",
+                height: "20px",
+                border: "3px solid #856404",
+                borderTop: "3px solid transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                flexShrink: 0
+              }}></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: "600", marginBottom: "2px" }}>
+                  Loading GraphQL Schema...
+                </div>
+                <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+                  Please wait while we connect to your GraphQL endpoint
+                </div>
+              </div>
+              <div style={{
+                position: "absolute",
+                top: "-2px",
+                right: "-2px",
+                width: "8px",
+                height: "8px",
+                background: "#ffc107",
+                borderRadius: "50%",
+                animation: "pulse 2s infinite"
+              }}></div>
+            </div>
+          )}
+
+          {connectError && (
+            <div style={{
+              marginBottom: "var(--space-4)",
+              padding: "var(--space-4)",
+              background: "linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)",
+              border: "1px solid #dc3545",
+              borderRadius: "12px",
+              fontSize: "0.9rem",
+              color: "#721c24",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "12px",
+              boxShadow: "0 4px 12px rgba(220, 53, 69, 0.15)",
+              position: "relative",
+              overflow: "hidden"
+            }}>
+              <div style={{
+                width: "20px",
+                height: "20px",
+                borderRadius: "50%",
+                background: "#dc3545",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                marginTop: "2px"
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                  Connection Error
+                </div>
+                <div style={{ fontSize: "0.85rem", lineHeight: 1.4 }}>
+                  {connectError}
+                </div>
+              </div>
+              <div style={{
+                position: "absolute",
+                top: "-2px",
+                right: "-2px",
+                width: "8px",
+                height: "8px",
+                background: "#dc3545",
+                borderRadius: "50%",
+                animation: "pulse 2s infinite"
+              }}></div>
+            </div>
+          )}
+
+          {schema && (
+            <div style={{
+              marginBottom: "var(--space-10)",
+              padding: "var(--space-4) var(--space-5)",
+              background: "linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)",
+              border: "1px solid #28a745",
+              borderRadius: "8px",
+              fontSize: "0.85rem",
+              color: "#155724",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              position: "relative"
+            }}>
+              <div style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "50%",
+                background: "#10b981",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0
+              }}>
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ 
+                  fontWeight: "600", 
+                  fontSize: "0.9rem",
+                  color: "#155724"
+                }}>
+                  Connected & Ready
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Schema Explorer */}
+          {schema && (
+            <div style={{
+              background: "var(--bg-primary)",
+              borderRadius: "8px",
+              padding: "var(--space-5)",
+              border: "1px solid var(--border-light)",
+              marginTop: "var(--space-10)"
+            }}>
+              <SchemaExplorer schema={schema} />
+            </div>
+          )}
+        </div>
+        <div style={{ 
+          background: "var(--bg-primary)",
+          boxShadow: "inset 1px 0 0 var(--border-light)",
+          position: "relative"
+        }}>
         {!schema ? (
           <div
             style={{
@@ -565,42 +800,66 @@ export default function Home() {
               justifyContent: "center",
               height: "100%",
               color: "var(--text-muted)",
-            }}
-          >
+                background: "linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)",
+                position: "relative",
+                overflow: "hidden"
+              }}
+            >
+              <div style={{
+                position: "absolute",
+                top: "-50%",
+                left: "-50%",
+                width: "200%",
+                height: "200%",
+                background: "radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)",
+                animation: "spin 20s linear infinite"
+              }}></div>
             <div
               style={{
-                width: "64px",
-                height: "64px",
+                  width: "80px",
+                  height: "80px",
                 borderRadius: "50%",
-                background: "var(--bg-tertiary)",
+                  background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: "var(--space-4)",
+                  marginBottom: "var(--space-6)",
+                  position: "relative",
+                  zIndex: 1,
+                  boxShadow: "0 8px 24px rgba(99, 102, 241, 0.3)"
               }}
             >
               <svg
-                width="32"
-                height="32"
+                  width="36"
+                  height="36"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+                  stroke="white"
+                  strokeWidth="2.5"
               >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
+              <div style={{ position: "relative", zIndex: 1 }}>
             <h3
               style={{
-                margin: "0 0 var(--space-2) 0",
+                    margin: "0 0 var(--space-3) 0",
                 color: "var(--text-primary)",
+                    fontSize: "1.5rem",
+                    fontWeight: "600"
               }}
             >
               Connect to GraphQL
             </h3>
-            <p style={{ margin: 0, fontSize: "1rem" }}>
-              Enter your endpoint to get started
-            </p>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: "1rem",
+                  lineHeight: 1.5,
+                  maxWidth: "400px"
+                }}>
+                  Enter your endpoint to get started building queries
+                </p>
+              </div>
           </div>
         ) : (
           <div
@@ -652,12 +911,18 @@ export default function Home() {
               />
             </div>
             {rootFieldName && (
-              <div style={{ flex: 1, overflow: "visible" }}>
+                <div style={{ flex: 1, overflow: "visible" }}>
                 {rootFieldName === "search" && (
-                  <div style={{ padding: "0 16px", overflow: "visible", position: "relative" }}>
+                    <div
+                      style={{
+                        padding: "0 16px",
+                        overflow: "visible",
+                        position: "relative",
+                      }}
+                    >
                     <SearchBuilder
                       group={searchGroup}
-                      key={`search-${resetTick}`} 
+                        key="search"
                       setGroup={setSearchGroup}
                       conditions={searchConds}
                       setConditions={setSearchConds}
@@ -688,7 +953,7 @@ export default function Home() {
                   onRootArgsChange={setRootArgs}
                   onLookupTemplatePath={lookupTemplatePath}
                   templatePathCache={templatePathCache.current}
-                  getItemTemplates={getItemTemplates}
+                    getItemTemplates={getItemTemplates}
                 />
               </div>
             )}

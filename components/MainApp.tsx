@@ -25,46 +25,11 @@ export function MainApp() {
   } = useQueryState();
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "400px 3fr 4fr",
-        height: "100vh",
-        background: "var(--border-light)",
-        gap: "2px",
-        boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)"
-      }}
-    >
+    <div className="main-app">
       {/* Left Sidebar */}
-      <div style={{ 
-        background: "var(--bg-primary)",
-        padding: "var(--space-8) var(--space-6)",
-        overflowY: "auto",
-        borderRight: "1px solid var(--border-light)",
-        minHeight: "100vh"
-      }}>
-        <div style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          gap: "var(--space-5)",
-          marginBottom: "var(--space-10)",
-          paddingBottom: "var(--space-8)",
-          borderBottom: "1px solid var(--border-light)",
-          position: "relative"
-        }}>
-          <div style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "16px",
-            background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            boxShadow: "0 8px 24px rgba(99, 102, 241, 0.3)",
-            position: "relative",
-            overflow: "hidden"
-          }}>
+      <div className="left-sidebar">
+        <div className="header-section">
+          <div className="header-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
@@ -81,23 +46,10 @@ export function MainApp() {
             }}></div>
           </div>
           <div>
-            <h2 style={{ 
-              margin: 0, 
-              fontSize: "1.75rem", 
-              fontWeight: "700",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
-            }}>
+            <h2 className="header-title">
               GraphQL Builder
             </h2>
-            <p style={{ 
-              margin: "4px 0 0 0", 
-              fontSize: "0.9rem", 
-              color: "var(--text-secondary)",
-              fontWeight: "500"
-            }}>
+            <p className="header-subtitle">
               Build and test GraphQL queries with ease
             </p>
           </div>
@@ -124,27 +76,9 @@ export function MainApp() {
       </div>
 
       {/* Middle Panel - Query Builder */}
-      <div style={{ 
-        background: "var(--bg-primary)",
-        boxShadow: "inset 1px 0 0 var(--border-light)",
-        position: "relative"
-      }}>
+      <div className="middle-panel">
         {!schema ? (
-          <div
-            style={{
-              padding: "var(--space-8)",
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              color: "var(--text-muted)",
-              background: "linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)",
-              position: "relative",
-              overflow: "hidden"
-            }}
-          >
+          <div className="connect-message">
             <div style={{
               position: "absolute",
               top: "-50%",
@@ -154,21 +88,7 @@ export function MainApp() {
               background: "radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)",
               animation: "spin 20s linear infinite"
             }}></div>
-            <div
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "var(--space-6)",
-                position: "relative",
-                zIndex: 1,
-                boxShadow: "0 8px 24px rgba(99, 102, 241, 0.3)"
-              }}
-            >
+            <div className="connect-icon">
               <svg
                 width="36"
                 height="36"
@@ -181,22 +101,10 @@ export function MainApp() {
               </svg>
             </div>
             <div style={{ position: "relative", zIndex: 1 }}>
-              <h3
-                style={{
-                  margin: "0 0 var(--space-3) 0",
-                  color: "var(--text-primary)",
-                  fontSize: "1.5rem",
-                  fontWeight: "600"
-                }}
-              >
+              <h3 className="connect-title">
                 Connect to GraphQL
               </h3>
-              <p style={{ 
-                margin: 0, 
-                fontSize: "1rem",
-                lineHeight: 1.5,
-                maxWidth: "400px"
-              }}>
+              <p className="connect-description">
                 Enter your endpoint to get started building queries
               </p>
             </div>

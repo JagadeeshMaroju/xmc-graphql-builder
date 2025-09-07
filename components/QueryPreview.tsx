@@ -224,13 +224,7 @@ export function QueryPreview({
   }
 
   return (
-    <div
-      style={{
-        background: "var(--bg-primary)",
-        padding: "24px",
-        overflowY: "auto",
-      }}
-    >
+    <div className="query-preview">
       <QueryPanel
         queryText={queryText}
         run={runQuery}

@@ -136,32 +136,8 @@ export function SearchBuilder({
 
   /* ---------------- Render ---------------- */
   return (
-    <div
-      style={{
-        border: "1px solid var(--border-light)",
-        padding: "6px",
-        borderRadius: "4px",
-        margin: "4px 0",
-        background: "var(--bg-primary)",
-        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-        overflow: "visible",
-        position: "relative",
-        zIndex: 0,
-        maxWidth: "100%",
-        width: "100%",
-        boxSizing: "border-box",
-      }}
-    >
-      <h3 style={{ 
-        marginTop: 0, 
-        marginBottom: "6px",
-        fontSize: "0.85rem",
-        fontWeight: "600",
-        color: "var(--text-primary)",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px"
-      }}>
+    <div className="search-builder">
+      <h3 className="search-header">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="8"/>
           <path d="m21 21-4.35-4.35"/>
@@ -170,38 +146,15 @@ export function SearchBuilder({
       </h3>
 
       {/* Compact controls layout */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
-          marginBottom: "6px",
-        }}
-      >
+      <div className="controls-layout">
         {/* First row: Group and OrderBy toggle */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Group:</label>
+        <div className="controls-row">
+          <div className="control-group">
+            <label className="control-label">Group:</label>
             <select
-              style={{ 
-                padding: "3px 6px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "3px",
-                fontSize: "0.75rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                transition: "border-color 0.2s ease",
-                minWidth: "60px"
-              }}
+              className="control-select"
               value={group}
               onChange={(e) => setGroup(e.target.value as GroupOp)}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border-light)";
-              }}
             >
               <option value="AND">AND</option>
               <option value="OR">OR</option>
@@ -209,185 +162,72 @@ export function SearchBuilder({
           </div>
 
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              cursor: "pointer",
-              padding: "2px 4px",
-              borderRadius: "3px",
-              transition: "background-color 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--bg-tertiary)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-            }}
+            className="toggle-container"
             onClick={() => setOrderEnabled(!orderEnabled)}
           >
-            <div
-              style={{
-                position: "relative",
-                width: "24px",
-                height: "14px",
-                backgroundColor: orderEnabled ? "var(--primary)" : "var(--border-medium)",
-                borderRadius: "7px",
-                transition: "all 0.3s ease",
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "1px",
-                  left: orderEnabled ? "11px" : "1px",
-                  width: "12px",
-                  height: "12px",
-                  backgroundColor: "white",
-                  borderRadius: "50%",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
-                }}
-              />
+            <div className={`toggle-switch ${orderEnabled ? 'enabled' : ''}`}>
+              <div className="toggle-handle" />
             </div>
-            <span style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>OrderBy</span>
+            <span className="toggle-label">OrderBy</span>
           </div>
         </div>
 
         {/* OrderBy fields when enabled */}
         {orderEnabled && (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Field:</label>
-            <input
-              style={{ 
-                  padding: "3px 6px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "3px",
-                fontSize: "0.75rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                transition: "border-color 0.2s ease",
-                  minWidth: "100px"
-              }}
-              value={orderField}
-              onChange={(e) => setOrderField(e.target.value)}
+          <div className="controls-row">
+            <div className="control-group">
+              <label className="control-label">Field:</label>
+              <input
+                className="control-input"
+                value={orderField}
+                onChange={(e) => setOrderField(e.target.value)}
                 placeholder="__Updated, __Created, name..."
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border-light)";
-              }}
-            />
+              />
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Dir:</label>
-            <select
-              style={{ 
-                  padding: "3px 6px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "3px",
-                fontSize: "0.75rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                transition: "border-color 0.2s ease",
-              }}
-              value={orderDir}
-              onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border-light)";
-              }}
-            >
-              <option value="ASC">ASC</option>
-              <option value="DESC">DESC</option>
-            </select>
+            <div className="control-group">
+              <label className="control-label">Dir:</label>
+              <select
+                className="control-select"
+                value={orderDir}
+                onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
+              >
+                <option value="ASC">ASC</option>
+                <option value="DESC">DESC</option>
+              </select>
             </div>
           </div>
         )}
 
         {/* Pagination controls */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Size:</label>
+        <div className="controls-row">
+          <div className="control-group">
+            <label className="control-label">Size:</label>
             <input
-        style={{
-                padding: "3px 6px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "3px",
-                fontSize: "0.75rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                transition: "border-color 0.2s ease",
-                width: "50px"
-              }}
-          type="number"
-          value={pageSize}
-          onChange={(e) => setPageSize(parseInt(e.target.value || "10", 10))}
-          min={1}
-        />
+              className="control-input-small"
+              type="number"
+              value={pageSize}
+              onChange={(e) => setPageSize(parseInt(e.target.value || "10", 10))}
+              min={1}
+            />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "3px", flex: 1, minWidth: "80px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>After:</label>
-        <input
-              style={{ 
-                padding: "3px 6px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "3px",
-                fontSize: "0.75rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                transition: "border-color 0.2s ease",
-                width: "120px"
-              }}
-          type="text"
-          value={afterCursor}
-          onChange={(e) => setAfterCursor(e.target.value)}
+          <div className="control-group" style={{ flex: 1, minWidth: "80px" }}>
+            <label className="control-label">After:</label>
+            <input
+              className="control-input-medium"
+              type="text"
+              value={afterCursor}
+              onChange={(e) => setAfterCursor(e.target.value)}
               placeholder="cursor..."
-        />
+            />
           </div>
         </div>
       </div>
 
       {/* Filter buttons */}
-      <div
-        style={{ 
-          display: "flex", 
-          gap: "3px", 
-          marginBottom: "6px", 
-          flexWrap: "wrap" 
-        }}
-      >
+      <div className="filter-buttons">
         <button 
           onClick={() => addCondition("_path")}
-          style={{
-            padding: "4px 8px",
-            border: "1px solid var(--primary)",
-            borderRadius: "3px",
-            background: "var(--primary)",
-            color: "white",
-            fontSize: "0.75rem",
-            fontWeight: "500",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            gap: "3px"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--primary-hover)";
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--primary)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
+          className="filter-button"
         >
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14"/>
@@ -396,28 +236,7 @@ export function SearchBuilder({
         </button>
         <button 
           onClick={() => addCondition("_templates")}
-          style={{
-            padding: "4px 8px",
-            border: "1px solid var(--primary)",
-            borderRadius: "3px",
-            background: "var(--primary)",
-            color: "white",
-            fontSize: "0.75rem",
-            fontWeight: "500",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            gap: "3px"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--primary-hover)";
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--primary)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
+          className="filter-button"
         >
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14"/>
@@ -426,28 +245,7 @@ export function SearchBuilder({
         </button>
         <button 
           onClick={() => addCondition("_language")}
-          style={{
-            padding: "4px 8px",
-            border: "1px solid var(--primary)",
-            borderRadius: "3px",
-            background: "var(--primary)",
-            color: "white",
-            fontSize: "0.75rem",
-            fontWeight: "500",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            gap: "3px"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--primary-hover)";
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--primary)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
+          className="filter-button"
         >
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14"/>
@@ -457,28 +255,7 @@ export function SearchBuilder({
         {conditions.length > 0 && (
           <button 
             onClick={clearAll}
-            style={{
-              padding: "4px 8px",
-              border: "1px solid var(--border-medium)",
-              borderRadius: "3px",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              fontSize: "0.75rem",
-              fontWeight: "500",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: "3px"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--bg-tertiary)";
-              e.currentTarget.style.borderColor = "var(--text-secondary)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "var(--border-medium)";
-            }}
+            className="clear-button"
           >
             <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
@@ -489,67 +266,30 @@ export function SearchBuilder({
       </div>
 
       {conditions.length === 0 && (
-        <div style={{ 
-          margin: "8px 0", 
-          padding: "8px 12px", 
-          background: "var(--bg-tertiary)", 
-          borderRadius: "6px",
-          border: "1px solid var(--border-light)"
-        }}>
-          <p style={{ 
-            color: "var(--text-secondary)", 
-            margin: 0, 
-            fontSize: "0.8rem",
-            lineHeight: 1.4
-          }}>
+        <div className="empty-message">
+          <p>
             Add at least one filter: <code>_path</code>, <code>_template</code>, or <code>_language</code>
           </p>
         </div>
       )}
 
       {/* Filters table */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div className="filters-list">
         {conditions.map((c) => (
           <div
             key={c.id}
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-              padding: "8px",
-              background: "var(--bg-secondary)",
-              borderRadius: "8px",
-              border: "1px solid var(--border-light)",
-            }}
+            className="filter-item"
           >
-            <div style={{ 
-              padding: "4px 8px", 
-              background: "var(--primary)", 
-              color: "white", 
-              borderRadius: "4px",
-              fontSize: "0.75rem",
-              fontWeight: "600",
-              minWidth: "80px",
-              textAlign: "center"
-            }}>
+            <div className="filter-badge">
               {c.name}
             </div>
 
             <select
+              className="filter-select"
               value={c.operator}
               onChange={(e) =>
                 updateCond(c.id, { operator: e.target.value as Operator })
               }
-              style={{
-                padding: "6px 8px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "4px",
-                fontSize: "0.875rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-                minWidth: "100px"
-              }}
             >
               {c.name === "_path" ? (
                 <>
@@ -565,48 +305,18 @@ export function SearchBuilder({
             </select>
 
             <input
+              className="filter-input"
               placeholder={
                 c.name === "_language" ? "e.g. en" : "GUID or path fragment"
               }
               value={c.value}
               onChange={(e) => updateCond(c.id, { value: e.target.value })}
-              style={{
-                padding: "6px 8px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "4px",
-                fontSize: "0.875rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                flex: 1,
-                minWidth: "150px"
-              }}
             />
 
             <button 
               onClick={() => duplicateCond(c.id)} 
               title="duplicate"
-              style={{
-                padding: "6px 8px",
-                border: "1px solid var(--border-medium)",
-                borderRadius: "4px",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--bg-tertiary)";
-                e.currentTarget.style.borderColor = "var(--primary)";
-                e.currentTarget.style.color = "var(--primary)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.borderColor = "var(--border-medium)";
-                e.currentTarget.style.color = "var(--text-secondary)";
-              }}
+              className="filter-action-button"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -616,28 +326,7 @@ export function SearchBuilder({
             <button 
               onClick={() => removeCond(c.id)} 
               title="remove"
-              style={{
-                padding: "6px 8px",
-                border: "1px solid var(--border-medium)",
-                borderRadius: "4px",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#fee2e2";
-                e.currentTarget.style.borderColor = "#dc2626";
-                e.currentTarget.style.color = "#dc2626";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.borderColor = "var(--border-medium)";
-                e.currentTarget.style.color = "var(--text-secondary)";
-              }}
+              className="filter-action-button remove"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
@@ -647,19 +336,8 @@ export function SearchBuilder({
         ))}
       </div>
 
-      <div style={{ 
-        marginTop: "12px", 
-        padding: "8px 12px", 
-        background: "var(--bg-tertiary)", 
-        borderRadius: "6px",
-        border: "1px solid var(--border-light)"
-      }}>
-        <p style={{ 
-          color: "var(--text-secondary)", 
-          margin: 0, 
-          fontSize: "0.8rem",
-          lineHeight: 1.4
-        }}>
+      <div className="default-selection">
+        <p>
           <strong>Default selection:</strong> <code>total</code>, <code>pageInfo</code>, <code>results</code>
         </p>
       </div>

@@ -149,30 +149,9 @@ export function QueryBuilder({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "24px",
-          borderBottom: "1px solid var(--border-light)",
-          background: "var(--bg-secondary)",
-          flexShrink: 0,
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
+    <div className="query-builder">
+      <div className="root-fields-header">
+        <h3 className="root-fields-title">
           <svg
             width="20"
             height="20"
@@ -186,7 +165,7 @@ export function QueryBuilder({
           Root Fields
         </h3>
       </div>
-      <div style={{ padding: "16px", flexShrink: 0 }}>
+      <div className="root-fields-container">
         <RootFieldList
           schema={schema}
           selected={rootFieldName}
@@ -198,15 +177,9 @@ export function QueryBuilder({
         />
       </div>
       {rootFieldName && (
-        <div style={{ flex: 1, overflow: "visible" }}>
+        <div className="selection-container">
           {rootFieldName === "search" && (
-            <div
-              style={{
-                padding: "0",
-                overflow: "visible",
-                position: "relative",
-              }}
-            >
+            <div className="search-builder-container">
               <SearchBuilder
                 group={searchGroup}
                 key="search"

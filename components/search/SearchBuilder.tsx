@@ -138,149 +138,143 @@ export function SearchBuilder({
   return (
     <div
       style={{
-        border: "1px solid #eee",
-        padding: 12,
-        borderRadius: 8,
-        margin: "12px 16px",
+        border: "1px solid var(--border-light)",
+        padding: "8px",
+        borderRadius: "6px",
+        margin: "6px 8px",
+        background: "var(--bg-primary)",
+        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
         overflow: "visible",
         position: "relative",
         zIndex: 0,
+        maxWidth: "100%",
+        width: "100%",
+        boxSizing: "border-box",
       }}
     >
-      <h3 style={{ marginTop: 0 }}>Search</h3>
+      <h3 style={{ 
+        marginTop: 0, 
+        marginBottom: "8px",
+        fontSize: "0.9rem",
+        fontWeight: "600",
+        color: "var(--text-primary)",
+        display: "flex",
+        alignItems: "center",
+        gap: "4px"
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        Search Builder
+      </h3>
 
-      {/* Group + optional orderBy + pagination controls */}
+      {/* Compact controls layout */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: 8,
-          alignItems: "center",
-          marginBottom: 8,
-          overflow: "visible",
-          position: "relative",
-          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: "6px",
+          marginBottom: "8px",
         }}
       >
-        <label style={{ gridColumn: "span 1" }}>Group</label>
-        <select
-          style={{ 
-            gridColumn: "span 2",
-            padding: "8px 12px",
-            border: "1px solid var(--border-light)",
-            borderRadius: "6px",
-            fontSize: "0.875rem",
-            background: "var(--bg-primary)",
-            color: "var(--text-primary)",
-            fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-            cursor: "pointer",
-            transition: "border-color 0.2s ease",
-            position: "relative",
-            zIndex: 999,
-          }}
-          value={group}
-          onChange={(e) => setGroup(e.target.value as GroupOp)}
-          onFocus={(e) => {
-            e.target.style.borderColor = "var(--primary)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "var(--border-light)";
-          }}
-        >
-          <option value="AND">AND</option>
-          <option value="OR">OR</option>
-        </select>
+        {/* First row: Group and OrderBy toggle */}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Group:</label>
+            <select
+              style={{ 
+                padding: "3px 6px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+                transition: "border-color 0.2s ease",
+                minWidth: "60px"
+              }}
+              value={group}
+              onChange={(e) => setGroup(e.target.value as GroupOp)}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--primary)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--border-light)";
+              }}
+            >
+              <option value="AND">AND</option>
+              <option value="OR">OR</option>
+            </select>
+          </div>
 
-        <div
-          style={{
-            gridColumn: "span 3",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            cursor: "pointer",
-            padding: "4px 8px",
-            borderRadius: "var(--radius-md)",
-            transition: "background-color 0.2s ease",
-            margin: 0,
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            color: "var(--text-primary)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--bg-tertiary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-          onClick={() => setOrderEnabled(!orderEnabled)}
-        >
-          {/* Custom Toggle Switch */}
           <div
             style={{
-              position: "relative",
-              width: "44px",
-              height: "24px",
-              backgroundColor: orderEnabled ? "var(--primary)" : "var(--border-medium)",
-              borderRadius: "12px",
-              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
               cursor: "pointer",
-              flexShrink: 0,
-              boxShadow: orderEnabled 
-                ? "0 2px 4px rgba(99, 102, 241, 0.3)" 
-                : "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
+              padding: "2px 4px",
+              borderRadius: "3px",
+              transition: "background-color 0.2s ease",
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--bg-tertiary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+            onClick={() => setOrderEnabled(!orderEnabled)}
           >
             <div
               style={{
-                position: "absolute",
-                top: "2px",
-                left: orderEnabled ? "22px" : "2px",
-                width: "20px",
-                height: "20px",
-                backgroundColor: "white",
-                borderRadius: "50%",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                transform: orderEnabled ? "scale(1)" : "scale(0.9)",
-              }}
-            />
-          </div>
-          <span>Enable orderBy</span>
-        </div>
-
-        {orderEnabled && (
-          <>
-            <label 
-              style={{ 
-                gridColumn: "span 2",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                display: "flex",
-                alignItems: "center",
-                margin: 0,
+                position: "relative",
+                width: "24px",
+                height: "14px",
+                backgroundColor: orderEnabled ? "var(--primary)" : "var(--border-medium)",
+                borderRadius: "7px",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                flexShrink: 0,
               }}
             >
-              orderBy.name
-            </label>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "1px",
+                  left: orderEnabled ? "11px" : "1px",
+                  width: "12px",
+                  height: "12px",
+                  backgroundColor: "white",
+                  borderRadius: "50%",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
+                }}
+              />
+            </div>
+            <span style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>OrderBy</span>
+          </div>
+        </div>
+
+        {/* OrderBy fields when enabled */}
+        {orderEnabled && (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Field:</label>
             <input
               style={{ 
-                gridColumn: "span 2",
-                padding: "8px 12px",
+                  padding: "3px 6px",
                 border: "1px solid var(--border-light)",
-                borderRadius: "6px",
-                fontSize: "0.875rem",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
                 transition: "border-color 0.2s ease",
-                position: "relative",
-                zIndex: 10,
+                  minWidth: "100px"
               }}
               value={orderField}
               onChange={(e) => setOrderField(e.target.value)}
-              placeholder="__Updated / __Created / name …"
+                placeholder="__Updated, __Created, name..."
               onFocus={(e) => {
                 e.target.style.borderColor = "var(--primary)";
               }}
@@ -288,35 +282,19 @@ export function SearchBuilder({
                 e.target.style.borderColor = "var(--border-light)";
               }}
             />
-
-            <label 
-              style={{ 
-                gridColumn: "span 1",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                display: "flex",
-                alignItems: "center",
-                margin: 0,
-              }}
-            >
-              direction
-            </label>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Dir:</label>
             <select
               style={{ 
-                gridColumn: "span 1",
-                padding: "8px 12px",
+                  padding: "3px 6px",
                 border: "1px solid var(--border-light)",
-                borderRadius: "6px",
-                fontSize: "0.875rem",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
                 cursor: "pointer",
                 transition: "border-color 0.2s ease",
-                position: "relative",
-                zIndex: 999,
               }}
               value={orderDir}
               onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
@@ -330,74 +308,248 @@ export function SearchBuilder({
               <option value="ASC">ASC</option>
               <option value="DESC">DESC</option>
             </select>
-          </>
+            </div>
+          </div>
         )}
-      </div>
 
-      <div
+        {/* Pagination controls */}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>Size:</label>
+            <input
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: 8,
-          alignItems: "center",
-          marginBottom: 8,
-        }}
-      >
-        <label style={{ gridColumn: "span 2" }}>pageSize</label>
-        <input
-          style={{ gridColumn: "span 2" }}
+                padding: "3px 6px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                transition: "border-color 0.2s ease",
+                width: "50px"
+              }}
           type="number"
           value={pageSize}
           onChange={(e) => setPageSize(parseInt(e.target.value || "10", 10))}
           min={1}
         />
-
-        <label style={{ gridColumn: "span 1" }}>after</label>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "3px", flex: 1, minWidth: "120px" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>After:</label>
         <input
-          style={{ gridColumn: "span 7" }}
+              style={{ 
+                padding: "3px 6px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                transition: "border-color 0.2s ease",
+                flex: 1
+              }}
           type="text"
           value={afterCursor}
           onChange={(e) => setAfterCursor(e.target.value)}
-          placeholder="cursor…"
+              placeholder="cursor..."
         />
+          </div>
+        </div>
       </div>
 
-      {/* Quick add + clear */}
+      {/* Filter buttons */}
       <div
-        style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}
+        style={{ 
+          display: "flex", 
+          gap: "4px", 
+          marginBottom: "8px", 
+          flexWrap: "wrap" 
+        }}
       >
-        <button onClick={() => addCondition("_path")}>+ _path</button>
-        <button onClick={() => addCondition("_templates")}>+ _template</button>
-        <button onClick={() => addCondition("_language")}>+ _language</button>
-        {conditions.length > 0 && <button onClick={clearAll}>Clear all</button>}
+        <button 
+          onClick={() => addCondition("_path")}
+          style={{
+            padding: "4px 8px",
+            border: "1px solid var(--primary)",
+            borderRadius: "3px",
+            background: "var(--primary)",
+            color: "white",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "3px"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--primary-hover)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _path
+        </button>
+        <button 
+          onClick={() => addCondition("_templates")}
+          style={{
+            padding: "4px 8px",
+            border: "1px solid var(--primary)",
+            borderRadius: "3px",
+            background: "var(--primary)",
+            color: "white",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "3px"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--primary-hover)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _template
+        </button>
+        <button 
+          onClick={() => addCondition("_language")}
+          style={{
+            padding: "4px 8px",
+            border: "1px solid var(--primary)",
+            borderRadius: "3px",
+            background: "var(--primary)",
+            color: "white",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "3px"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--primary-hover)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _language
+        </button>
+        {conditions.length > 0 && (
+          <button 
+            onClick={clearAll}
+            style={{
+              padding: "4px 8px",
+              border: "1px solid var(--border-medium)",
+              borderRadius: "3px",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "3px"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--bg-tertiary)";
+              e.currentTarget.style.borderColor = "var(--text-secondary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "var(--border-medium)";
+            }}
+          >
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            </svg>
+            Clear
+          </button>
+        )}
       </div>
 
       {conditions.length === 0 && (
-        <p style={{ color: "#666", margin: "8px 0" }}>
-          Add at least one filter (<code>_path</code>, <code>_template</code>,
-          or <code>_language</code>).
-        </p>
+        <div style={{ 
+          margin: "8px 0", 
+          padding: "8px 12px", 
+          background: "var(--bg-tertiary)", 
+          borderRadius: "6px",
+          border: "1px solid var(--border-light)"
+        }}>
+          <p style={{ 
+            color: "var(--text-secondary)", 
+            margin: 0, 
+            fontSize: "0.8rem",
+            lineHeight: 1.4
+          }}>
+            Add at least one filter: <code>_path</code>, <code>_template</code>, or <code>_language</code>
+          </p>
+        </div>
       )}
 
       {/* Filters table */}
-      <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {conditions.map((c) => (
           <div
             key={c.id}
             style={{
-              display: "grid",
-              gridTemplateColumns: "140px 160px 1fr auto auto",
-              gap: 8,
+              display: "flex",
+              gap: "8px",
               alignItems: "center",
+              padding: "8px",
+              background: "var(--bg-secondary)",
+              borderRadius: "8px",
+              border: "1px solid var(--border-light)",
             }}
           >
-            <code>{c.name}</code>
+            <div style={{ 
+              padding: "4px 8px", 
+              background: "var(--primary)", 
+              color: "white", 
+              borderRadius: "4px",
+              fontSize: "0.75rem",
+              fontWeight: "600",
+              minWidth: "80px",
+              textAlign: "center"
+            }}>
+              {c.name}
+            </div>
 
             <select
               value={c.operator}
               onChange={(e) =>
                 updateCond(c.id, { operator: e.target.value as Operator })
               }
+              style={{
+                padding: "6px 8px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "4px",
+                fontSize: "0.875rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+                minWidth: "100px"
+              }}
             >
               {c.name === "_path" ? (
                 <>
@@ -418,26 +570,99 @@ export function SearchBuilder({
               }
               value={c.value}
               onChange={(e) => updateCond(c.id, { value: e.target.value })}
+              style={{
+                padding: "6px 8px",
+                border: "1px solid var(--border-light)",
+                borderRadius: "4px",
+                fontSize: "0.875rem",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                flex: 1,
+                minWidth: "150px"
+              }}
             />
 
-            <button onClick={() => duplicateCond(c.id)} title="duplicate">
-              ⎘
+            <button 
+              onClick={() => duplicateCond(c.id)} 
+              title="duplicate"
+              style={{
+                padding: "6px 8px",
+                border: "1px solid var(--border-medium)",
+                borderRadius: "4px",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--bg-tertiary)";
+                e.currentTarget.style.borderColor = "var(--primary)";
+                e.currentTarget.style.color = "var(--primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = "var(--border-medium)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
             </button>
-            <button onClick={() => removeCond(c.id)} title="remove">
-              ✕
+            <button 
+              onClick={() => removeCond(c.id)} 
+              title="remove"
+              style={{
+                padding: "6px 8px",
+                border: "1px solid var(--border-medium)",
+                borderRadius: "4px",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#fee2e2";
+                e.currentTarget.style.borderColor = "#dc2626";
+                e.currentTarget.style.color = "#dc2626";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = "var(--border-medium)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
             </button>
           </div>
         ))}
       </div>
 
-      <p style={{ color: "#888", marginTop: 8 }}>
-        Result selection defaults to <code>total</code>, <code>pageInfo</code>,
-        and{" "}
-        <code>
-          results {"{"} url {"{"} path {"}"} {"}"}
-        </code>
-        .
-      </p>
+      <div style={{ 
+        marginTop: "12px", 
+        padding: "8px 12px", 
+        background: "var(--bg-tertiary)", 
+        borderRadius: "6px",
+        border: "1px solid var(--border-light)"
+      }}>
+        <p style={{ 
+          color: "var(--text-secondary)", 
+          margin: 0, 
+          fontSize: "0.8rem",
+          lineHeight: 1.4
+        }}>
+          <strong>Default selection:</strong> <code>total</code>, <code>pageInfo</code>, <code>results</code>
+        </p>
+      </div>
     </div>
   );
 }

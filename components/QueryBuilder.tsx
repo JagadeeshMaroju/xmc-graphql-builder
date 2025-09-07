@@ -202,7 +202,7 @@ export function QueryBuilder({
           {rootFieldName === "search" && (
             <div
               style={{
-                padding: "0 16px",
+                padding: "0",
                 overflow: "visible",
                 position: "relative",
               }}

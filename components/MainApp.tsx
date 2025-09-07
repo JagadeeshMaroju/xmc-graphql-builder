@@ -28,7 +28,7 @@ export function MainApp() {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "400px 1fr 6fr",
+        gridTemplateColumns: "400px 3fr 4fr",
         height: "100vh",
         background: "var(--border-light)",
         gap: "2px",

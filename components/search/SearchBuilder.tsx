@@ -139,11 +139,11 @@ export function SearchBuilder({
     <div
       style={{
         border: "1px solid var(--border-light)",
-        padding: "8px",
-        borderRadius: "6px",
-        margin: "6px 8px",
+        padding: "6px",
+        borderRadius: "4px",
+        margin: "4px 0",
         background: "var(--bg-primary)",
-        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
         overflow: "visible",
         position: "relative",
         zIndex: 0,
@@ -154,8 +154,8 @@ export function SearchBuilder({
     >
       <h3 style={{ 
         marginTop: 0, 
-        marginBottom: "8px",
-        fontSize: "0.9rem",
+        marginBottom: "6px",
+        fontSize: "0.85rem",
         fontWeight: "600",
         color: "var(--text-primary)",
         display: "flex",
@@ -174,8 +174,8 @@ export function SearchBuilder({
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "6px",
-          marginBottom: "8px",
+          gap: "4px",
+          marginBottom: "6px",
         }}
       >
         {/* First row: Group and OrderBy toggle */}
@@ -333,7 +333,7 @@ export function SearchBuilder({
           min={1}
         />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "3px", flex: 1, minWidth: "120px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "3px", flex: 1, minWidth: "80px" }}>
             <label style={{ fontSize: "0.75rem", fontWeight: "500", color: "var(--text-primary)" }}>After:</label>
         <input
               style={{ 
@@ -344,7 +344,7 @@ export function SearchBuilder({
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
                 transition: "border-color 0.2s ease",
-                flex: 1
+                width: "120px"
               }}
           type="text"
           value={afterCursor}
@@ -359,8 +359,8 @@ export function SearchBuilder({
       <div
         style={{ 
           display: "flex", 
-          gap: "4px", 
-          marginBottom: "8px", 
+          gap: "3px", 
+          marginBottom: "6px", 
           flexWrap: "wrap" 
         }}
       >

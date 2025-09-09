@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "docs": "echo '📚 GraphQL Builder Documentation' && echo '' && echo '📖 User Guide: docs/USER_GUIDE.md' && echo '🏗️ Architecture: docs/ARCHITECTURE.md' && echo '📄 README: README.md' && echo '' && echo 'Open these files in your editor or view them on GitHub!'"
   },
   "dependencies": {
     "@sitecore-marketplace-sdk/client": "^0.2.0",

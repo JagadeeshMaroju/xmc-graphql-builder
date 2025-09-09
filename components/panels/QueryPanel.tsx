@@ -11,6 +11,13 @@ export function QueryPanel({
   loading: boolean;
   copy: () => void;
 }) {
+  // Add keyboard shortcut for copy (Ctrl+C or Cmd+C)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+      e.preventDefault();
+      copy();
+    }
+  };
   return (
     <div className="card">
       <div className="card-header">
@@ -40,6 +47,9 @@ export function QueryPanel({
           readOnly
           value={queryText}
           placeholder="Your GraphQL query will appear here..."
+          onFocus={(e) => (e.target as HTMLTextAreaElement).select()}
+          onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+          onKeyDown={handleKeyDown}
           style={{
             width: "100%",
             height: 200,
@@ -53,6 +63,8 @@ export function QueryPanel({
             padding: "var(--space-4)",
             background: "var(--bg-tertiary)",
             color: "var(--text-primary)",
+            cursor: "text",
+            userSelect: "all",
           }}
         />
         <div
@@ -184,6 +196,18 @@ export function QueryPanel({
             </svg>
             Copy Query
           </button>
+        </div>
+        <div style={{
+          marginTop: "12px",
+          padding: "8px 12px",
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          borderRadius: "6px",
+          fontSize: "0.8rem",
+          color: "#64748b",
+          textAlign: "center"
+        }}>
+          💡 <strong>Copy Tips:</strong> Click textarea to select all, or use Ctrl+C (Cmd+C on Mac) to copy
         </div>
       </div>
     </div>

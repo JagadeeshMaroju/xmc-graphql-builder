@@ -1,6 +1,14 @@
 // SchemaExplorer component styles
 .schema-explorer {
   padding: 16px;
+  
+  @media (max-width: 1024px) {
+    padding: 12px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 }
 
 .schema-header {

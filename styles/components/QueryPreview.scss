@@ -4,6 +4,14 @@
   padding: 16px;
   overflow-y: auto;
   height: 100%;
+  
+  @media (max-width: 1024px) {
+    padding: 12px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 }
 
 .query-header {
@@ -24,6 +32,17 @@
   margin-bottom: 16px;
   min-height: 200px;
   position: relative;
+  
+  @media (max-width: 1024px) {
+    padding: 12px;
+    min-height: 150px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px;
+    min-height: 120px;
+    margin-bottom: 12px;
+  }
 }
 
 .query-textarea {

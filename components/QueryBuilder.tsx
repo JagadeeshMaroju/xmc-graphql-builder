@@ -3,7 +3,6 @@ import type { GraphQLSchema } from "graphql";
 import { RootFieldList } from "@/components/panels/RootFieldList";
 import { SelectionPanel } from "@/components/tree/Tree";
 import { SearchBuilder, SearchCondition } from "@/components/search/SearchBuilder";
-import { getStoredCredentials } from "@/utils/credentials";
 
 interface QueryBuilderProps {
   schema: GraphQLSchema;
@@ -51,10 +50,9 @@ export function QueryBuilder({
     if (!templateId) return undefined;
     const query = `query TplPath($id: ID!, $language: String){ item(id: $id, language: $language){ path } }`;
     // Get current credentials
-    const storedCreds = getStoredCredentials();
     const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
-    const tokenToUse = xmCloudToken || storedCreds.token || "";
-    const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
+    const tokenToUse = xmCloudToken || "";
+    const endpointToUse = process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
     
     const body = {
       endpoint: endpointToUse,
@@ -103,10 +101,9 @@ export function QueryBuilder({
     }`;
 
     // Get current credentials
-    const storedCreds = getStoredCredentials();
     const xmCloudToken = appContext?.resourceAccess?.[0]?.context?.preview;
-    const tokenToUse = xmCloudToken || storedCreds.token || "";
-    const endpointToUse = storedCreds.endpoint || process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
+    const tokenToUse = xmCloudToken || "";
+    const endpointToUse = process.env.NEXT_PUBLIC_XM_ENDPOINT || "";
     
     const body = {
       endpoint: endpointToUse,

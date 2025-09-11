@@ -1,314 +1,348 @@
-# XM GraphQL Builder
+# GraphQL Builder - User Guide
 
-A powerful, interactive GraphQL query builder designed as a **XM Cloud Marketplace application**. This application provides an intuitive interface for building, testing, and optimizing GraphQL queries without requiring deep knowledge of GraphQL syntax or manual credential management.
+## Table of Contents
 
-## 🚀 Features
+1. [Running the Application](#running-the-application)
+2. [Getting Started](#getting-started)
+3. [Building Item Queries](#building-item-queries)
+4. [Building Search Queries](#building-search-queries)
+5. [Building Layout Queries](#building-layout-queries)
+6. [Building Site Queries](#building-site-queries)
+7. [Understanding Templates](#understanding-templates)
+8. [Query Preview and Execution](#query-preview-and-execution)
 
-### Core Functionality
-- **Interactive Query Builder**: Visual interface for constructing GraphQL queries
-- **Real-time Query Generation**: Automatically generates GraphQL queries as you build
-- **Schema Explorer**: Browse and explore the complete GraphQL schema
-- **Template Filtering**: Smart filtering of Sitecore templates with exclusion of system templates
-- **Alphabetical Organization**: Templates sorted alphabetically for easy navigation
+## Running the Application
 
-### Query Types Supported
-- **Item Queries**: Query specific Sitecore items by path
-- **Search Queries**: Advanced search with filtering, sorting, and pagination
-- **Template-based Filtering**: Filter content by Sitecore templates
-- **Inheritance Support**: Include base templates and inheritance chains
+You can run the GraphQL Builder in two ways:
 
-### Advanced Features
-- **XM Cloud Integration**: Seamless authentication using XM Cloud Marketplace tokens
-- **Query Preview**: Real-time preview with multiple copy methods (clipboard API, manual selection, download)
-- **Variables Editor**: Manage query variables and parameters
-- **Results Display**: View query results in a formatted display
-- **Template Exclusion**: Automatically excludes system templates (Advanced, Appearance, Help, etc.)
-- **No Manual Setup**: Works immediately after Marketplace installation
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+### Run the App
 
-## 🛠️ Technology Stack
-
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: SCSS with modern CSS Grid and Flexbox
-- **GraphQL**: Apollo Client for GraphQL operations
-- **State Management**: React Hooks and Context API
-- **Build Tool**: Next.js with TypeScript compilation
-
-## 📋 Prerequisites
-
-- Node.js 18+ (for development)
-- npm or yarn
-- XM Cloud instance with Marketplace access
-- Admin access to install Marketplace applications
-
-## 🚀 Installation
-
-### For XM Cloud Marketplace
-
-1. **Build the application**
-   ```bash
-   git clone <repository-url>
-   cd xmc-graphql-builder
-   npm install
-   npm run build
-   ```
-
-2. **Deploy to your hosting platform**
-   - Deploy the built application to your preferred hosting service (Vercel, Netlify, etc.)
-   - Ensure the app is accessible via HTTPS
-   - Note the application URL
-
-3. **Register with XM Cloud Marketplace**
-   - Log into your XM Cloud instance
-   - Navigate to the Marketplace section
-   - Register your application with the deployed URL
-
-4. **Install in your XM Cloud instance**
-   - Find the "XM GraphQL Builder" in the Marketplace
-   - Click "Install" to add it to your instance
-   - The application will automatically authenticate using XM Cloud tokens
-
-### For Development
-
-1. **Clone and install**
+1. **Clone and Install**
    ```bash
    git clone <repository-url>
    cd xmc-graphql-builder
    npm install
    ```
 
-2. **Environment Setup**
-   Create a `.env.local` file in the root directory:
-   ```env
-   NEXT_PUBLIC_XM_ENDPOINT=https://your-xm-cloud-instance.sitecorecloud.io/sitecore/api/graph/edge
-   ```
-
-3. **Start the development server**
+2. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
+3. **Open in Browser**
    Navigate to `http://localhost:3000`
 
-## 📖 Documentation
 
-- **[User Guide](docs/USER_GUIDE.md)** - Complete step-by-step usage instructions
-- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Technical architecture and implementation details
-- **[API Reference](#api-reference)** - GraphQL API documentation
 
-## 🚀 Quick Start
+
+
+
+## Getting Started
+
+
+
+
+
+### First Time Setup
 
 1. **Access the Application**
-   - Navigate to the installed app in your XM Cloud instance
-   - The application will automatically connect using your XM Cloud credentials
+   - This app is configured to run as a standalone app in XM Cloud
+   - Open XM Cloud environment where this app is installed
+   - Open the application from the marketplace app icon
 
-2. **Select Query Type**
-   - **Item Query**: Query a specific item by path
-   - **Search Query**: Search across multiple items with filters
+2. **Understand the Interface**
+   - **Left Panel**: Schema Explorer - Browse available GraphQL types and fields
+   - **Middle Panel**: Query Builder - Build your queries interactively
+   - **Right Panel**: Query Preview - View generated queries and results
 
-3. **Build Your Query**
-   - Use the schema explorer to browse available fields
-   - Select templates from the filtered list
-   - Add fields and configure arguments
-   - Set up search conditions and pagination
+3. **Automatic Connection**
+   - The application automatically connects to your XM Cloud instance
+   - The schema will load automatically in the left panel
 
-4. **Preview and Execute**
-   - View the generated GraphQL query
-   - Execute the query to see results
 
-For detailed instructions, see the [User Guide](docs/USER_GUIDE.md).
 
-### Item Queries
+4. **Connection Status**
+   - The connection status is displayed in the interface
 
-Item queries allow you to fetch specific Sitecore items and their data:
 
-1. **Select "item" as the root field**
-2. **Enter the item path** (e.g., `/sitecore/content/Home`)
-3. **Choose templates** from the alphabetically sorted list
-4. **Select fields** you want to include in the query
-5. **Configure arguments** like language, version, etc.
+## Building Item Queries
 
-### Search Queries
+Item queries allow you to fetch specific Sitecore items and their data.
 
-Search queries provide powerful filtering and search capabilities:
+### Step 1: Select Query Type
 
-1. **Select "search" as the root field**
-2. **Configure search conditions**:
-   - Add filters for specific fields
-   - Set up ordering and sorting
-   - Configure pagination (page size, cursor)
-3. **Select result fields** to include in the response
-4. **Set up template filtering** to narrow down results
+1. In the middle panel, you'll see "Root Fields"
+2. Select "item" as your root field type
+3. The interface will update to show item-specific options
 
-### Template Management
+### Step 2: Provide Item Path
 
-The application includes intelligent template filtering:
+1. **Enter Item Path**
+   - In the "item Arguments" section, enter the path to your item
+   - Example: `/sitecore/content/Home/Products/Product1`
+   - The path should start with `/sitecore/content/`
 
-- **Automatic Exclusion**: System templates are automatically excluded
-- **Alphabetical Sorting**: Templates are sorted A-Z for easy navigation
-- **Inheritance Support**: Base templates are included in the inheritance chain
-- **Smart Matching**: Advanced matching algorithms for template names
+2. **Set Language** (Optional)
+   - Default is "en" (English)
+   - You can change this to any valid language code
+   - Example: "es" for Spanish, "fr" for French
 
-## 🏗️ Architecture
+### Step 3: Select Templates
 
-### Component Structure
+1. **Template List Appears**
+   - After entering a valid path, templates will load automatically
+   - Templates are filtered to show only relevant ones for your item
+   - Template filter can be turned off to load all the templates. 
+   - System templates are automatically excluded
 
-```
-components/
-├── MainApp.tsx              # Main application layout
-├── QueryBuilder.tsx         # Query building orchestration
-├── QueryPreview.tsx         # Query display and execution
-├── SchemaExplorer.tsx       # Schema browsing interface
-├── panels/                  # UI panels
-│   ├── RootFieldList.tsx    # Root field selection
-│   ├── ConnectionPanel.tsx  # Connection status display
-│   └── VariablesEditor.tsx  # Variables management
-├── search/
-│   └── SearchBuilder.tsx    # Search query builder
-└── tree/
-    └── Tree.tsx            # Field selection tree
-```
+2. **Choose Templates**
+   - Select the templates you want to include in your query
+   - Templates are sorted alphabetically for easy navigation
+   - You can select multiple templates
 
-### Key Hooks
+3. **Template Information**
+   - Each template shows its name and inheritance information
+   - Base templates are automatically included in the inheritance chain
 
-- `useConnection`: Manages GraphQL connection state
-- `useQueryState`: Handles query building state
-- `useMarketplaceClient`: XM Cloud integration
+### Step 4: Select Fields
 
-### Utility Functions
+1. **Browse Available Fields**
+   - Use the schema explorer (left panel) to browse available fields
+   - Fields are organized by type and template
 
-- `queryHelpers.ts`: Query generation utilities
+2. **Add Fields to Query**
+   - Click on fields to add them to your selection
+   - Fields will appear in the query preview (right panel)
+   - You can add fields from multiple templates
 
-## 🎨 Styling
+3. **Configure Field Arguments**
+   - Some fields accept arguments (like language, version, etc.)
+   - Configure these arguments as needed
 
-The application uses a modern, clean design with:
+### Step 5: Preview and Execute
 
-- **SCSS Architecture**: Modular SCSS files for each component
-- **Responsive Design**: Mobile-first approach with breakpoints for desktop, tablet, and mobile
-- **CSS Grid**: Modern layout system that adapts to screen size
-- **Consistent Theming**: Unified color scheme and typography
-- **Mobile Optimized**: Stacked layout on smaller screens for better usability
+1. **View Generated Query**
+   - The query preview (right panel) shows your generated GraphQL query
+   - The query is properly formatted and ready to execute
 
-## 🔧 Configuration
+2. **Execute Query**
+   - Click "Execute Query" to run the query
+   - Results will appear in the results section
+   - You can copy the query for use in other tools
 
-### Environment Variables
+## Building Search Queries
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_XM_ENDPOINT` | Default XM Cloud GraphQL endpoint | No |
+Search queries provide powerful filtering and search capabilities across multiple items.
 
-### Template Exclusion
+### Step 1: Select Query Type
 
-The application automatically excludes these system templates:
-- Advanced, Appearance, Help, Layout, Lifetime
-- Indexing, Insert Options, Item Buckets, Publishing
-- Security, Statistics, Tagging, Tasks, Validators
-- Workflow, Version
+1. In the middle panel, select "search" as your root field type
+2. The interface will update to show search-specific options
 
-## 🚀 Deployment
+### Step 2: Configure Search Conditions
 
-### Production Build
+1. **Add Search Filters**
+   - Click "Add Condition" to add search filters
+   - Select the field to filter on
+   - Choose the operator (equals, contains, greater than, etc.)
+   - Enter the value to filter by
 
-```bash
-npm run build
-npm start
-```
+2. **Combine Conditions**
+   - Use AND/OR logic to combine multiple conditions
+   - Create complex search criteria
 
-### Docker Deployment
+3. **Common Search Examples**
+   - Find all items with a specific template: `_templates equals "Product"`
+   - Find items containing text: `title contains "product"`
+   - Find items by date range: `createdDate greater than "2023-01-01"`
 
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
+### Step 3: Set Up Ordering and Pagination
 
-## 🤝 Contributing
+1. **Configure Ordering**
+   - Select the field to sort by
+   - Choose ascending or descending order
+   - You can add multiple sort criteria
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. **Set Pagination**
+   - Set the page size (number of results per page)
+   - Use cursor-based pagination for large result sets
+   - Navigate through pages of results
 
-## 📝 API Reference
+### Step 4: Select Result Fields
 
-### GraphQL Endpoints
+1. **Choose Fields to Return**
+   - Select which fields to include in the search results
+   - You can select fields from any template
+   - Common fields include: `name`, `path`, `template`, `createdDate`
 
-The application connects to Sitecore XM Cloud GraphQL endpoints:
+2. **Template Filtering**
+   - Optionally filter results by specific templates
+   - This helps narrow down the search results
 
-- **Schema Introspection**: `/sitecore/api/graph/edge`
-- **Query Execution**: `/sitecore/api/graph/edge`
+### Step 5: Execute Search
 
-### Key GraphQL Operations
+1. **Preview Search Query**
+   - Review the generated search query
+   - Ensure all required fields and filters are included
 
-#### Item Query
-```graphql
-query GetItem($path: String!, $language: String!) {
-  item(path: $path, language: $language) {
-    # Selected fields
-  }
-}
-```
+2. **Run Search**
+   - Execute the search to see results
+   - Results will show matching items with selected fields
+   - Use pagination to browse through results
 
-#### Search Query
-```graphql
-query SearchItems($where: SearchInput, $first: Int, $after: String) {
-  search(where: $where, first: $first, after: $after) {
-    results {
-      # Selected fields
-    }
-  }
-}
-```
+## Building Layout Queries
 
-## 🐛 Troubleshooting
+Layout queries allow you to fetch layout data for specific pages or items in Sitecore.
 
-### Common Issues
+### Step 1: Select Query Type
 
-1. **Connection Failed**
-   - Verify your XM Cloud endpoint URL
-   - Check your authentication token
-   - Ensure network connectivity
+1. In the middle panel, select "layout" as your root field type
+2. The interface will update to show layout-specific options
 
-2. **Schema Loading Issues**
-   - Check if the GraphQL endpoint is accessible
-   - Verify authentication credentials
-   - Check browser console for errors
+### Step 2: Provide Layout Parameters
 
-3. **Template Filtering Issues**
-   - Ensure the item path is valid
-   - Check if the item exists in Sitecore
-   - Verify template inheritance
+1. **Enter Item Path**
+   - In the "layout Arguments" section, enter the path to your item
+   - Example: `/sitecore/content/Home/Products/Product1`
+   - The path should start with `/sitecore/content/`
 
-### Debug Mode
+2. **Set Language** (Optional)
+   - Default is "en" (English)
+   - You can change this to any valid language code
+   - Example: "es" for Spanish, "fr" for French
 
-Enable debug logging by opening browser developer tools and checking the console for detailed logs.
+3. **Set Site** 
+   - Specify the site name.
 
-## 📄 License
+### Step 3: Select Layout Fields
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. **Browse Available Fields**
+   - Use the schema explorer (left panel) to browse available layout fields
+   - Common fields include: `item`, `rendered`, `placeholders`
 
-## 🙏 Acknowledgments
+2. **Add Fields to Query**
+   - Click on fields to add them to your selection
+   - Fields will appear in the query preview (right panel)
+   - You can add nested fields for detailed layout information
 
-- Sitecore XM Cloud for the GraphQL API
-- Next.js team for the excellent framework
-- React community for the ecosystem
-- All contributors and users
+### Step 4: Preview and Execute
 
-## 📞 Support
+1. **View Generated Query**
+   - The query preview (right panel) shows your generated GraphQL query
+   - The query is properly formatted and ready to execute
 
-For support and questions:
+2. **Execute Query**
+   - Click "Execute Query" to run the query
+   - Results will appear in the results section
+   - You can copy the query for use in other tools
 
-- Create an issue in the repository
-- Check the troubleshooting section
-- Review the API documentation
+## Building Site Queries
+
+Site queries allow you to fetch site information and configuration data from Sitecore.
+
+### Step 1: Select Query Type
+
+1. In the middle panel, select "site" as your root field type
+2. The interface will update to show site-specific options
+
+### Step 2: Provide Site Parameters
+
+1. **Enter Site Name**
+   - In the "site Arguments" section, enter the site name
+   - This should match your Sitecore site configuration
+
+
+### Step 3: Select Site Fields
+
+1. **Browse Available Fields**
+   - Use the schema explorer (left panel) to browse available site fields
+   - Common fields include: `name`, `language`, `hostName`, `startItem`
+
+2. **Add Fields to Query**
+   - Click on fields to add them to your selection
+   - Fields will appear in the query preview (right panel)
+   - You can add nested fields for detailed site information
+
+### Step 4: Preview and Execute
+
+1. **View Generated Query**
+   - The query preview (right panel) shows your generated GraphQL query
+   - The query is properly formatted and ready to execute
+
+2. **Execute Query**
+   - Click "Execute Query" to run the query
+   - Results will appear in the results section
+   - You can copy the query for use in other tools
+
+## Understanding Templates
+
+
+
+### Template Filtering
+
+The application automatically filters templates to show only relevant ones:
+
+1. **Relevant Templates Only**
+   - Only templates that are actually used by your item are shown
+   - This prevents confusion and reduces clutter
+
+2. **Inheritance Chain**
+   - Base templates are automatically included
+   - You can see the full inheritance hierarchy
+
+3. **System Template Exclusion**
+   - System templates are automatically excluded
+   - These include: Advanced, Appearance, Help, Layout, etc.
+
+
+
+
+## Query Preview and Execution
+
+### Understanding the Query Preview
+
+The query preview panel shows:
+
+1. **Generated GraphQL Query**
+   - The complete GraphQL query that will be executed
+   - Properly formatted and indented
+   - Includes all selected fields and arguments
+
+2. **Variables**
+   - Query variables and their values
+   - Can be modified before execution
+
+### Executing Queries
+
+1. **Execute Button**
+   - Click "Execute Query" to run the query
+   - The query will be sent to your XM Cloud instance
+
+2. **Viewing Results**
+   - Results appear in the results section
+   - JSON format for easy reading
+   - Expandable/collapsible for large results
+
+
+
+### Copying Queries
+
+1. **Copy to Clipboard**
+   - Use the copy button to copy the query
+   - Paste into other GraphQL tools or applications
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
-**Built with ❤️ for the Sitecore community**

@@ -13,9 +13,7 @@
 
 ## Running the Application
 
-You can run the GraphQL Builder in two ways:
 
-### Run the App
 
 1. **Clone and Install**
    ```bash

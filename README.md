@@ -8,7 +8,6 @@ A powerful, interactive GraphQL query builder designed as a **XM Cloud Marketpla
 - **Interactive Query Builder**: Visual interface for constructing GraphQL queries
 - **Real-time Query Generation**: Automatically generates GraphQL queries as you build
 - **Schema Explorer**: Browse and explore the complete GraphQL schema
-- **Query Complexity Analysis**: Real-time complexity calculation and optimization suggestions
 - **Template Filtering**: Smart filtering of Sitecore templates with exclusion of system templates
 - **Alphabetical Organization**: Templates sorted alphabetically for easy navigation
 
@@ -116,7 +115,6 @@ A powerful, interactive GraphQL query builder designed as a **XM Cloud Marketpla
 
 4. **Preview and Execute**
    - View the generated GraphQL query
-   - Check query complexity
    - Execute the query to see results
 
 For detailed instructions, see the [User Guide](docs/USER_GUIDE.md).
@@ -181,7 +179,6 @@ components/
 ### Utility Functions
 
 - `queryHelpers.ts`: Query generation utilities
-- `complexity.ts`: Query complexity calculation
 
 ## 🎨 Styling
 

@@ -17,7 +17,8 @@ export function useQueryState() {
 
     // Clear query-building state
     setSelection([]);
-    setRootArgs({});
+    // Initialize default language for item queries
+    setRootArgs(rootFieldName === "item" ? { language: "en" } : {});
     
     // Reset search UI state too
     setSearchGroup("AND");

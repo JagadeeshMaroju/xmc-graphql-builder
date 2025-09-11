@@ -180,7 +180,7 @@ export function SelectionPanel(props: {
                     </label>
                     <input
                       key={a.name}
-                      value={(localArgs as any)[a.name] ?? ""}
+                      value={(localArgs as any)[a.name] ?? (a.name === "language" ? "en" : "")}
                       onChange={(e) => {
                         const newValue = e.target.value;
                         const newLocalArgs = {
@@ -198,7 +198,7 @@ export function SelectionPanel(props: {
                         };
                         immediateUpdate(newLocalArgs); // Immediate update on blur
                       }}
-                      placeholder={`Enter ${a.name}...`}
+                      placeholder={a.name === "language" ? "e.g. en (default)" : `Enter ${a.name}...`}
                       style={{
                         margin: 0,
                         padding: "8px 12px",
@@ -635,7 +635,7 @@ export function NodeFields({
           )}
           
           <input
-            placeholder="Filter template name / id / path…"
+            placeholder="Filter template name…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             style={{

@@ -197,18 +197,6 @@ export function QueryPanel({
             Copy Query
           </button>
         </div>
-        <div style={{
-          marginTop: "12px",
-          padding: "8px 12px",
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-          borderRadius: "6px",
-          fontSize: "0.8rem",
-          color: "#64748b",
-          textAlign: "center"
-        }}>
-          💡 <strong>Copy Tips:</strong> Click textarea to select all, or use Ctrl+C (Cmd+C on Mac) to copy
-        </div>
       </div>
     </div>
   );

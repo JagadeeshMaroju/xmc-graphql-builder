@@ -56,7 +56,6 @@ MainApp
 │           └── Argument Configuration
 └── QueryPreview
     ├── Query Display
-    ├── Complexity Analysis
     └── Results Display
 ```
 
@@ -309,10 +308,9 @@ The application automatically excludes "Standard Template" and its inherited tem
 
 ### Query Optimizations
 
-1. **Complexity Analysis**: Real-time complexity calculation
-2. **Field Selection**: Only select necessary fields
-3. **Pagination**: Cursor-based pagination for large result sets
-4. **Caching**: Intelligent caching of query results
+1. **Field Selection**: Only select necessary fields
+2. **Pagination**: Cursor-based pagination for large result sets
+3. **Caching**: Intelligent caching of query results
 
 ## Security Considerations
 

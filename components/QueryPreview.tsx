@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import type { GraphQLSchema } from "graphql";
 import { QueryPanel } from "@/components/panels/QueryPanel";
-import { ComplexityBar } from "@/components/panels/ComplexityBar";
 import { collectValuesFromSelections } from "@/utils/queryHelpers";
-import { computeComplexity } from "@/utils/complexity";
 import {
   buildOperation,
   makeVarDef,
@@ -13,7 +11,6 @@ import {
   toNamedTypeNode,
   mergeRootArgsIntoSelections,
 } from "@/lib/graphql/ast";
-import { DEFAULT_WEIGHTS } from "@/lib/graphql/complexity";
 
 interface QueryPreviewProps {
   schema: GraphQLSchema | null;
@@ -205,10 +202,10 @@ export function QueryPreview({
     }
   };
 
-  const { queryText, complexity, warnLevel } = useMemo(() => {
+  const { queryText } = useMemo(() => {
     if (!schema || !rootFieldName) {
       setVariableDefs([]);
-      return { queryText: "", complexity: 0, warnLevel: "ok" as const };
+      return { queryText: "" };
     }
     const qField = rootQueryType(schema).getFields()[rootFieldName];
 
@@ -300,14 +297,7 @@ export function QueryPreview({
     const doc = buildOperation("query", rootFieldName, mergedSelections, defs);
     const printed = printDoc(doc);
 
-    const comp = computeComplexity(schema, qField, mergedSelections);
-    const warnLevel =
-      comp >= DEFAULT_WEIGHTS.maxBlock
-        ? "block"
-        : comp >= DEFAULT_WEIGHTS.maxWarn
-        ? "warn"
-        : "ok";
-    return { queryText: printed, complexity: comp, warnLevel };
+    return { queryText: printed };
   }, [schema, rootFieldName, JSON.stringify(rootArgs), JSON.stringify(selection)]);
 
   // Auto-computed variables from selection field args + root args (root wins on clashes)
@@ -387,7 +377,7 @@ export function QueryPreview({
       <QueryPanel
         queryText={queryText}
         run={runQuery}
-        canRun={!!queryText && warnLevel !== "block"}
+        canRun={!!queryText}
         loading={loading}
         copy={() => copyToClipboard(queryText)}
       />
@@ -429,29 +419,6 @@ export function QueryPreview({
         </div>
       )}
 
-      <div style={{ marginTop: "32px" }}>
-        <h3
-          style={{
-            margin: "0 0 16px 0",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2v20M2 12h20" />
-          </svg>
-          Complexity
-        </h3>
-        <ComplexityBar value={complexity} />
-      </div>
 
       <div style={{ marginTop: "32px" }}>
         <h3

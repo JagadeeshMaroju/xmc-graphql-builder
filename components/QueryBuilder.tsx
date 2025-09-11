@@ -169,7 +169,8 @@ export function QueryBuilder({
           onSelect={(n) => {
             setRootFieldName(n);
             setSelection([]);
-            setRootArgs({});
+            // Initialize default language for item queries
+            setRootArgs(n === "item" ? { language: "en" } : {});
           }}
         />
       </div>

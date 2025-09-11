@@ -17,7 +17,7 @@
 
 1. **Clone and Install**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/JagadeeshMaroju/xmc-graphql-builder.git
    cd xmc-graphql-builder
    npm install
    ```

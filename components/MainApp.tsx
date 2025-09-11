@@ -47,7 +47,7 @@ export function MainApp() {
           </div>
           <div>
             <h2 className="header-title">
-              GraphQL Builder
+              GraphQL Query Builder
             </h2>
             <p className="header-subtitle">
               Build and test GraphQL queries with ease

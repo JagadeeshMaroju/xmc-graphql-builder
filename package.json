@@ -6,13 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "docs": "echo '📚 GraphQL Builder Documentation' && echo '' && echo '📖 User Guide: docs/USER_GUIDE.md' && echo '🏗️ Architecture: docs/ARCHITECTURE.md' && echo '📄 README: README.md' && echo '' && echo 'Open these files in your editor or view them on GitHub!'"
   },
   "dependencies": {
+    "@sitecore-marketplace-sdk/client": "^0.2.0",
+    "@sitecore-marketplace-sdk/xmc": "^0.2.1",
     "graphql": "^16.9.0",
     "next": "^14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "sass": "^1.92.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

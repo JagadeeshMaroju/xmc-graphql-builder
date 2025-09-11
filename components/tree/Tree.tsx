@@ -66,8 +66,6 @@ export function SelectionPanel(props: {
   const q = rootQueryType(schema).getFields()[rootField];
   const rootType = getNamedType(q.type);
 
-  // Debug logging to see what's happening with rootArgs
-  console.log("SelectionPanel render - rootArgs:", rootArgs);
 
   return (
     <div
@@ -127,16 +125,6 @@ export function SelectionPanel(props: {
                 gap: "8px",
               }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-              </svg>
               {rootField} Arguments
             </h3>
           </div>
@@ -192,7 +180,7 @@ export function SelectionPanel(props: {
                     </label>
                     <input
                       key={a.name}
-                      value={(localArgs as any)[a.name] ?? ""}
+                      value={(localArgs as any)[a.name] ?? (a.name === "language" ? "en" : "")}
                       onChange={(e) => {
                         const newValue = e.target.value;
                         const newLocalArgs = {
@@ -210,7 +198,7 @@ export function SelectionPanel(props: {
                         };
                         immediateUpdate(newLocalArgs); // Immediate update on blur
                       }}
-                      placeholder={`Enter ${a.name}...`}
+                      placeholder={a.name === "language" ? "e.g. en (default)" : `Enter ${a.name}...`}
                       style={{
                         margin: 0,
                         padding: "8px 12px",
@@ -331,10 +319,6 @@ export function NodeFields({
             rootArgs.path as string, 
             rootArgs.language as string
           );
-          console.log("🔍 Template Debug Info:", {
-            itemPath: rootArgs.path,
-            apiReturnedTemplates: templates
-          });
           
           setItemTemplates(templates);
         } catch (error) {
@@ -365,14 +349,27 @@ export function NodeFields({
 
     // Filter by item templates if available and "Show All" is not checked
     if (itemTemplates.length > 0 && !showAllTemplates) {
-      console.log("🔍 Detailed Template Matching Debug:", {
-        apiReturnedTemplates: itemTemplates,
-        availableSchemaTypes: types.map((t: any) => ({ name: t.name, pretty: parseTemplateInfo(t.name).pretty })),
-        totalSchemaTypes: types.length
-      });
+      
+      // Templates to exclude from the list
+      const excludedTemplates = [
+        'Advanced', 'Appearance', 'Help', 'Layout', 'Lifetime', 'Indexing',
+        'Insert Options', 'Item Buckets', 'Publishing', 'Security', 'Statistics',
+        'Tagging', 'Tasks', 'Validators', 'Workflow', 'Version'
+      ];
       
       entries = entries.filter((e) => {
         const info = parseTemplateInfo(e.t.name);
+        
+        // Check if this template should be excluded
+        const isExcluded = excludedTemplates.some(excludedTemplate => 
+          info.pretty.toLowerCase() === excludedTemplate.toLowerCase() ||
+          e.t.name.toLowerCase().includes(excludedTemplate.toLowerCase())
+        );
+        
+        if (isExcluded) {
+          return false;
+        }
+        
         return itemTemplates.some(templateName => {
           // Try multiple matching strategies
           const matches = [
@@ -393,15 +390,16 @@ export function NodeFields({
           
           const matched = matches.some(Boolean);
           if (matched) {
-            console.log(`✅ Template match found:`, {
-              graphqlType: e.t.name,
-              prettyName: info.pretty,
-              apiTemplate: templateName,
-              matchStrategy: matches.findIndex(Boolean)
-            });
           }
           return matched;
         });
+      });
+      
+      // Sort entries alphabetically by pretty name
+      entries.sort((a, b) => {
+        const aPretty = parseTemplateInfo(a.t.name).pretty;
+        const bPretty = parseTemplateInfo(b.t.name).pretty;
+        return aPretty.localeCompare(bPretty);
       });
       
       // Log unmatched templates
@@ -637,7 +635,7 @@ export function NodeFields({
           )}
           
           <input
-            placeholder="Filter template name / id / path…"
+            placeholder="Filter template name…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             style={{

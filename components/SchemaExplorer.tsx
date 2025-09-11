@@ -22,20 +22,36 @@ export default function SchemaExplorer({ schema }: { schema: GraphQLSchema }) {
     return list.filter(i => i.name.toLowerCase().includes(lower) || (i.desc && i.desc.toLowerCase().includes(lower)) || (i.fields && i.fields.some(f => f.name.toLowerCase().includes(lower))));
   }, [schema, q]);
   return (
-    <div>
-      <h3>Schema Explorer</h3>
-      <input placeholder="Search types & fields…" value={q} onChange={e => setQ(e.target.value)} style={{ width: '100%' }} />
-      <div style={{ marginTop: 8, maxHeight: 260, overflow: 'auto', border: '1px solid #eee' }}>
+    <div className="schema-explorer">
+      <h3 className="schema-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 3h18v18H3zM9 9h6v6H9z"/>
+        </svg>
+        Schema Explorer
+      </h3>
+      <input 
+        className="schema-search"
+        placeholder="Search types & fields..." 
+        value={q} 
+        onChange={e => setQ(e.target.value)} 
+      />
+      <div className="schema-list">
         {items.map(i => (
-          <details key={i.name} style={{ padding: 8, borderBottom: '1px solid #f2f2f2' }}>
-            <summary><span style={{ fontFamily: 'monospace' }}>{i.name}</span><em style={{ color: '#999', marginLeft: 6 }}>({i.kind})</em></summary>
-            {i.desc && <p style={{ color: '#666', margin: '4px 0 8px' }}>{i.desc}</p>}
+          <details key={i.name} className="schema-item">
+            <summary className="schema-summary">
+              <svg className="schema-arrow" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+              <span className="schema-name">{i.name}</span>
+              <em className="schema-type">({i.kind})</em>
+            </summary>
+            {i.desc && <p className="schema-description">{i.desc}</p>}
             {i.fields && (
-              <ul style={{ listStyle: 'none', paddingLeft: 12 }}>
+              <ul className="schema-fields">
                 {i.fields.map(f => (
-                  <li key={f.name} style={{ marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'monospace' }}>{f.name}</span>
-                    {f.description && <em style={{ color: '#888', marginLeft: 6 }}>{f.description}</em>}
+                  <li key={f.name} className="schema-field">
+                    <span className="schema-field-name">{f.name}</span>
+                    {f.description && <em className="schema-field-desc">{f.description}</em>}
                   </li>
                 ))}
               </ul>

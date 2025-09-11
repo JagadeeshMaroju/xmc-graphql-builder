@@ -29,7 +29,7 @@ export function SearchBuilder({
   group: GroupOp;
   setGroup: (g: GroupOp) => void;
   conditions: SearchCondition[];
-  setConditions: (c: SearchCondition[]) => void;
+  setConditions: React.Dispatch<React.SetStateAction<SearchCondition[]>>;
 
   // pagination (left as variables in the printed document)
   pageSize: number;
@@ -136,264 +136,156 @@ export function SearchBuilder({
 
   /* ---------------- Render ---------------- */
   return (
-    <div
-      style={{
-        border: "1px solid #eee",
-        padding: 12,
-        borderRadius: 8,
-        margin: "12px 16px",
-        overflow: "visible",
-        position: "relative",
-        zIndex: 0,
-      }}
-    >
-      <h3 style={{ marginTop: 0 }}>Search</h3>
+    <div className="search-builder">
+      <h3 className="search-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        Search Builder
+      </h3>
 
-      {/* Group + optional orderBy + pagination controls */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: 8,
-          alignItems: "center",
-          marginBottom: 8,
-          overflow: "visible",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <label style={{ gridColumn: "span 1" }}>Group</label>
-        <select
-          style={{ 
-            gridColumn: "span 2",
-            padding: "8px 12px",
-            border: "1px solid var(--border-light)",
-            borderRadius: "6px",
-            fontSize: "0.875rem",
-            background: "var(--bg-primary)",
-            color: "var(--text-primary)",
-            fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-            cursor: "pointer",
-            transition: "border-color 0.2s ease",
-            position: "relative",
-            zIndex: 999,
-          }}
-          value={group}
-          onChange={(e) => setGroup(e.target.value as GroupOp)}
-          onFocus={(e) => {
-            e.target.style.borderColor = "var(--primary)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "var(--border-light)";
-          }}
-        >
-          <option value="AND">AND</option>
-          <option value="OR">OR</option>
-        </select>
-
-        <div
-          style={{
-            gridColumn: "span 3",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            cursor: "pointer",
-            padding: "4px 8px",
-            borderRadius: "var(--radius-md)",
-            transition: "background-color 0.2s ease",
-            margin: 0,
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            color: "var(--text-primary)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--bg-tertiary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-          onClick={() => setOrderEnabled(!orderEnabled)}
-        >
-          {/* Custom Toggle Switch */}
-          <div
-            style={{
-              position: "relative",
-              width: "44px",
-              height: "24px",
-              backgroundColor: orderEnabled ? "var(--primary)" : "var(--border-medium)",
-              borderRadius: "12px",
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              flexShrink: 0,
-              boxShadow: orderEnabled 
-                ? "0 2px 4px rgba(99, 102, 241, 0.3)" 
-                : "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: "2px",
-                left: orderEnabled ? "22px" : "2px",
-                width: "20px",
-                height: "20px",
-                backgroundColor: "white",
-                borderRadius: "50%",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                transform: orderEnabled ? "scale(1)" : "scale(0.9)",
-              }}
-            />
+      {/* Compact controls layout */}
+      <div className="controls-layout">
+        {/* First row: Group and OrderBy toggle */}
+        <div className="controls-row">
+          <div className="control-group">
+            <label className="control-label">Group:</label>
+            <select
+              className="control-select"
+              value={group}
+              onChange={(e) => setGroup(e.target.value as GroupOp)}
+            >
+              <option value="AND">AND</option>
+              <option value="OR">OR</option>
+            </select>
           </div>
-          <span>Enable orderBy</span>
+
+          <div
+            className="toggle-container"
+            onClick={() => setOrderEnabled(!orderEnabled)}
+          >
+            <div className={`toggle-switch ${orderEnabled ? 'enabled' : ''}`}>
+              <div className="toggle-handle" />
+            </div>
+            <span className="toggle-label">OrderBy</span>
+          </div>
         </div>
 
+        {/* OrderBy fields when enabled */}
         {orderEnabled && (
-          <>
-            <label 
-              style={{ 
-                gridColumn: "span 2",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                display: "flex",
-                alignItems: "center",
-                margin: 0,
-              }}
-            >
-              orderBy.name
-            </label>
-            <input
-              style={{ 
-                gridColumn: "span 2",
-                padding: "8px 12px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "6px",
-                fontSize: "0.875rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                transition: "border-color 0.2s ease",
-                position: "relative",
-                zIndex: 10,
-              }}
-              value={orderField}
-              onChange={(e) => setOrderField(e.target.value)}
-              placeholder="__Updated / __Created / name …"
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border-light)";
-              }}
-            />
+          <div className="controls-row">
+            <div className="control-group">
+              <label className="control-label">Field:</label>
+              <input
+                className="control-input"
+                value={orderField}
+                onChange={(e) => setOrderField(e.target.value)}
+                placeholder="__Updated, __Created, name..."
+              />
+            </div>
+            <div className="control-group">
+              <label className="control-label">Dir:</label>
+              <select
+                className="control-select"
+                value={orderDir}
+                onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
+              >
+                <option value="ASC">ASC</option>
+                <option value="DESC">DESC</option>
+              </select>
+            </div>
+          </div>
+        )}
 
-            <label 
-              style={{ 
-                gridColumn: "span 1",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                display: "flex",
-                alignItems: "center",
-                margin: 0,
-              }}
-            >
-              direction
-            </label>
-            <select
-              style={{ 
-                gridColumn: "span 1",
-                padding: "8px 12px",
-                border: "1px solid var(--border-light)",
-                borderRadius: "6px",
-                fontSize: "0.875rem",
-                background: "var(--bg-primary)",
-                color: "var(--text-primary)",
-                fontFamily: "JetBrains Mono, Fira Code, Monaco, Consolas, monospace",
-                cursor: "pointer",
-                transition: "border-color 0.2s ease",
-                position: "relative",
-                zIndex: 999,
-              }}
-              value={orderDir}
-              onChange={(e) => setOrderDir(e.target.value as "ASC" | "DESC")}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border-light)";
-              }}
-            >
-              <option value="ASC">ASC</option>
-              <option value="DESC">DESC</option>
-            </select>
-          </>
+        {/* Pagination controls */}
+        <div className="controls-row">
+          <div className="control-group">
+            <label className="control-label">Size:</label>
+            <input
+              className="control-input-small"
+              type="number"
+              value={pageSize}
+              onChange={(e) => setPageSize(parseInt(e.target.value || "10", 10))}
+              min={1}
+            />
+          </div>
+          <div className="control-group" style={{ flex: 1, minWidth: "80px" }}>
+            <label className="control-label">After:</label>
+            <input
+              className="control-input-medium"
+              type="text"
+              value={afterCursor}
+              onChange={(e) => setAfterCursor(e.target.value)}
+              placeholder="cursor..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Filter buttons */}
+      <div className="filter-buttons">
+        <button 
+          onClick={() => addCondition("_path")}
+          className="filter-button"
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _path
+        </button>
+        <button 
+          onClick={() => addCondition("_templates")}
+          className="filter-button"
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _template
+        </button>
+        <button 
+          onClick={() => addCondition("_language")}
+          className="filter-button"
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          _language
+        </button>
+        {conditions.length > 0 && (
+          <button 
+            onClick={clearAll}
+            className="clear-button"
+          >
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            </svg>
+            Clear
+          </button>
         )}
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: 8,
-          alignItems: "center",
-          marginBottom: 8,
-        }}
-      >
-        <label style={{ gridColumn: "span 2" }}>pageSize</label>
-        <input
-          style={{ gridColumn: "span 2" }}
-          type="number"
-          value={pageSize}
-          onChange={(e) => setPageSize(parseInt(e.target.value || "10", 10))}
-          min={1}
-        />
-
-        <label style={{ gridColumn: "span 1" }}>after</label>
-        <input
-          style={{ gridColumn: "span 7" }}
-          type="text"
-          value={afterCursor}
-          onChange={(e) => setAfterCursor(e.target.value)}
-          placeholder="cursor…"
-        />
-      </div>
-
-      {/* Quick add + clear */}
-      <div
-        style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}
-      >
-        <button onClick={() => addCondition("_path")}>+ _path</button>
-        <button onClick={() => addCondition("_templates")}>+ _template</button>
-        <button onClick={() => addCondition("_language")}>+ _language</button>
-        {conditions.length > 0 && <button onClick={clearAll}>Clear all</button>}
-      </div>
-
       {conditions.length === 0 && (
-        <p style={{ color: "#666", margin: "8px 0" }}>
-          Add at least one filter (<code>_path</code>, <code>_template</code>,
-          or <code>_language</code>).
-        </p>
+        <div className="empty-message">
+          <p>
+            Add at least one filter: <code>_path</code>, <code>_template</code>, or <code>_language</code>
+          </p>
+        </div>
       )}
 
       {/* Filters table */}
-      <div style={{ display: "grid", gap: 8 }}>
+      <div className="filters-list">
         {conditions.map((c) => (
           <div
             key={c.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "140px 160px 1fr auto auto",
-              gap: 8,
-              alignItems: "center",
-            }}
+            className="filter-item"
           >
-            <code>{c.name}</code>
+            <div className="filter-badge">
+              {c.name}
+            </div>
 
             <select
+              className="filter-select"
               value={c.operator}
               onChange={(e) =>
                 updateCond(c.id, { operator: e.target.value as Operator })
@@ -413,6 +305,7 @@ export function SearchBuilder({
             </select>
 
             <input
+              className="filter-input"
               placeholder={
                 c.name === "_language" ? "e.g. en" : "GUID or path fragment"
               }
@@ -420,24 +313,34 @@ export function SearchBuilder({
               onChange={(e) => updateCond(c.id, { value: e.target.value })}
             />
 
-            <button onClick={() => duplicateCond(c.id)} title="duplicate">
-              ⎘
+            <button 
+              onClick={() => duplicateCond(c.id)} 
+              title="duplicate"
+              className="filter-action-button"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
             </button>
-            <button onClick={() => removeCond(c.id)} title="remove">
-              ✕
+            <button 
+              onClick={() => removeCond(c.id)} 
+              title="remove"
+              className="filter-action-button remove"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
             </button>
           </div>
         ))}
       </div>
 
-      <p style={{ color: "#888", marginTop: 8 }}>
-        Result selection defaults to <code>total</code>, <code>pageInfo</code>,
-        and{" "}
-        <code>
-          results {"{"} url {"{"} path {"}"} {"}"}
-        </code>
-        .
-      </p>
+      <div className="default-selection">
+        <p>
+          <strong>Default selection:</strong> <code>total</code>, <code>pageInfo</code>, <code>results</code>
+        </p>
+      </div>
     </div>
   );
 }

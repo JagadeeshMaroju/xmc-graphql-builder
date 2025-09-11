@@ -1,0 +1,70 @@
+// RootFieldList component styles
+.root-field-list {
+  padding: 16px;
+}
+
+.root-field-header {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.root-field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.root-field-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  background: transparent;
+  margin: 0;
+  min-height: 48px;
+  width: 100%;
+
+  &:hover:not(.selected) {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  &.selected {
+    border-color: #6366f1;
+    background: #f0f4ff;
+  }
+}
+
+.root-field-radio {
+  margin: 0;
+  accent-color: #6366f1;
+  transform: scale(1.2);
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.root-field-text {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.selected {
+    font-weight: 600;
+    color: #6366f1;
+  }
+}

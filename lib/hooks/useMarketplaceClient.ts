@@ -121,7 +121,7 @@ export function useMarketplaceClient(
   /*
     Auto-initialize on mount (unless autoInit is false).
     - Returns a cleanup that resets state and prevents in-flight init refs
-      from remaining true after unmount.
+      from remaining true after unmount. 
   */
   useEffect(() => {
     if (opts.autoInit) {
